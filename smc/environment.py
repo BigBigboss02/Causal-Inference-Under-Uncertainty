@@ -49,7 +49,6 @@ class Environment:
         self.actions = self._get_all_possible_actions()
 
     def _create_keys_and_boxes(self):
-
         keys, boxes = list(), list()
 
         for i in range(len(key_data["id"])):
@@ -70,12 +69,10 @@ class Environment:
         return keys, boxes
 
     def _get_all_possible_actions(self):
-        
         actions = [(key, box) for key in self.keys for box in self.boxes]
         if self.include_inspect:
             actions.extend([('inspect', box) for box in self.boxes])
         return actions
-
 
     def does_key_open_box(self, key: Key, box: Box) -> bool:
         return ((key.id, box.id) in key_box_mapping)
