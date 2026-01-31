@@ -55,7 +55,7 @@ class Environment:
             keys.append(Key(
                 id=key_data["id"][i],
                 color=key_data["color"][i],
-                number=key_data["number"][i] if key_data["number"][i] != 0 else None
+                number=key_data["number"][i] if key_data["number"][i] != 0 else None,
                 shape=key_data["shape"][i] if not np.isnan(key_data["shape"][i]) else None
             ))
         for i in range(len(box_data["id"])):
