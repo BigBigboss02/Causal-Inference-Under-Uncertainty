@@ -48,6 +48,8 @@ class Environment:
         self.keys, self.boxes = self._create_keys_and_boxes()
         self.actions = self._get_all_possible_actions()
 
+        self.success_pairs = set()
+
     def _create_keys_and_boxes(self):
         keys, boxes = list(), list()
 
@@ -74,9 +76,17 @@ class Environment:
             actions.extend([('inspect', box) for box in self.boxes])
         return actions
 
-    def does_key_open_box(self, key: Key, box: Box) -> bool:
-        return ((key.id, box.id) in key_box_mapping)
+    def is_solved(self) -> bool:
+        return (len(self.success_pairs) >= 5)
 
     def get_random_action(self) -> Tuple[Key, Box]:
         return random.choice(self.actions)
+
+    def test_action(self, key: Key, box: Box) -> bool:
+        if (key.id, box.id) in key_box_mapping:
+            if (key.id, box.id) not in self.success_pairs:
+                self.success_pairs.add((key.id, box.id))
+            return True
+        else:
+            return False
 

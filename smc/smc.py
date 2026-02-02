@@ -20,18 +20,16 @@ class Particle:
 
 class Engine:
 
-    def __init__(self, config: Dict, llm: Generator = None):
+    def __init__(self, config: Dict, environment: Environment, llm: Generator = None):
         
         self.num_particles: int = config.num_particles
         self.theta: float = config.theta
         self.ess_threshold: float = config.ess_threshold
 
+        self.environment: Environment = environment
         self.llm: Generator = llm
 
-
         self.particles = self._initialize_particles()
-
-        
 
         
     def _initialize_particles(self) -> List[Particle]:
@@ -85,14 +83,10 @@ class Engine:
         """
         calculate information gain by inspect box action
         """
-        if box.id in self.inspected_boxes:
-            return 0.0
-
-        if self.trial_count < 3:
-            return 0.0
+        pass
         
 
-    def _compute_information_gain(self, key: Key, box: Box) -> float:
+    def _compute_info_gain(self, key: Key, box: Box) -> float:
         """
         calculate information gain as a difference of entropy by taking trial action
         """
@@ -136,6 +130,40 @@ class Engine:
         for particle in self.particles:
             particle.weight = (particle.weight / total_weight) if total_weight > 0 else (1.0 / self.num_particles)
 
-    
+        # get effective sample size
+        ess = self._compute_ess()
+        if ess < self.num_particles * self.ess_threshold:
+            self._resample()
 
-    def run(self, environment: Environment, max_trials: int = None) -> bool:
+    
+    def _select_action(self):
+
+        actions = self.environment.actions
+        
+        # determine action that maximizes information gain
+        max_info_gain = float('inf')
+        best_action = None
+        for (key, box) in actions:
+            if (key.id, box.id) in self.environment.success_pairs: # box already opened with key
+                continue
+            else:
+                info_gain = self._compute_info_gain(key, box)
+                if info_gain > max_info_gain:
+                    max_info_gain = info_gain
+                    best_action = (key, box)
+        return best_action
+
+        
+
+    def run(self, max_trials: int = None) -> bool:
+        
+        self.trial_count = 0
+        while not self.environment.is_solved() and self.trial_count < max_trials:
+            (key, box) = self._select_action()
+            outcome = self.environment.test_action(key, box)
+
+            self.update_particle_weights(key, box, outcome)
+
+            self.trial_count += 1
+
+        return self.environment.is_solved()
