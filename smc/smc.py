@@ -1,19 +1,25 @@
 from this import d
 from environment import Environment, Key, Box
 from typing import List, Optional, Dict, Tuple
-from generator import Generator, default_hypothesis_codes
+from generator import Generator, default_hypothesis_codes, default_hypothesis_soc
 from code_utils import execute_hypothesis_code
 import math, random
 
 
 class Particle:
 
-    def __init__(self, code: str, weight: float = 1.0):
-        self.code = code
+    def __init__(self, hypothesis, weight: float = 1.0):
+
+        self.mode = "soc" if isinstance(hypothesis, dict) else "code"
+
+        self.hypothesis = hypothesis
         self.weight = weight
     
     def evaluate(self, key: Key, box: Box) -> bool:
-        result = execute_hypothesis_code(self.code, key, box)
+        if self.mode == "soc":
+            result = (self.hypothesis[key.id] == box.id)
+        elif self.code:
+            result = execute_hypothesis_code(self.hypothesis, key, box)
         return result
 
 
@@ -29,17 +35,27 @@ class Engine:
         self.environment: Environment = environment
         self.llm: Generator = llm
 
+        self.mode: str = config.mode
+        self.prior: str = config.prior # uniform or random
+
         self.particles = self._initialize_particles()
 
         
     def _initialize_particles(self) -> List[Particle]:
 
-        if self.llm:
-            hypothesis_codes = self.llm.generate_hypotheses(self.num_particles)
-        else:
-            hypothesis_codes = default_hypothesis_codes[:self.num_particles]
+        if self.mode == "soc":
+            hypotheses = default_hypothesis_soc[:self.num_particles]    
+        elif self.mode == "code":
+            hypotheses = self.llm.generate_hypotheses(self.num_particles)
+        
+        if self.prior == "uniform":
+            priors = [(1.0 / self.num_particles) for _ in range(self.num_particles)]
+        elif self.prior == "random":
+            priors = [random.random() for _ in range(self.num_particles)]
+            total = sum(priors)
+            priors = [p / total for p in priors]
 
-        particles = [Particle(code=code, weight=(1.0 / self.num_particles)) for code in hypothesis_codes]
+        particles = [Particle(hypothesis=hypotheses[i], weight=priors[i]) for i in range(self.num_particles)]
         return particles
 
 
@@ -55,7 +71,7 @@ class Engine:
         
         resampled = list()
         for i in indices:
-            new_particle = Particle(code=self.particles[i].code, weight=(1.0 / self.num_particles))
+            new_particle = Particle(hypothesis=self.particles[i].hypothesis, weight=(1.0 / self.num_particles))
             resampled.append(new_particle)
         self.particles = resampled
             
@@ -154,7 +170,6 @@ class Engine:
         return best_action
 
         
-
     def run(self, max_trials: int = None) -> bool:
         
         self.trial_count = 0

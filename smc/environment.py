@@ -26,7 +26,6 @@ key_box_mapping = {
 }
 
 
-
 class Key:
     id: str
     color: str

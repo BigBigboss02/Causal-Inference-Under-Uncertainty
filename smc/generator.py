@@ -1,3 +1,13 @@
+default_hypothesis_soc = [
+    {
+        "key": "red",
+        "box": "red"
+    },
+    {
+        "key": "pink",
+        "box": "pink"
+    }
+]
 default_hypothesis_codes = [
     """
         def evaluate(key, box): 
