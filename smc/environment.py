@@ -9,8 +9,8 @@ configuration of keys and boxes as used in the experiment
 key_data = {
     "id": ["red", "pink", "grey2", "cloud", "orange4", "green3", "blue", "yellow5", "heart", "white", "triangle", "diamond", "purple"],
     "color": ["red", "pink", "grey", "grey", "orange", "green", "blue", "yellow", "green", "white", "yellow", "orange", "purple"],
-    "number": [1, 6, 2, 0, 4, 3, 0, 5, 0, 7, 0, 0, 0],
-    "shape": [np.nan, np.nan, np.nan, "cloud", np.nan, np.nan, "star", np.nan, "heart", np.nan, "triangle", "diamond", "arrow"]
+    "number": [1, 6, 2, None, 4, 3, None, 5, None, 7, None, None, None],
+    "shape": [None, None, None, "cloud", None, None, "star", None, "heart", None, "triangle", "diamond", "arrow"]
 }
 
 box_data = {
@@ -27,17 +27,18 @@ key_box_mapping = {
 
 
 class Key:
-    id: str
-    color: str
-    number: Optional[int]
-    shape: Optional[str]
-
+    def __init__(self, id: str, color: str, number: Optional[int], shape: Optional[str]):
+        self.id = id
+        self.color = color
+        self.number = number
+        self.shape = shape
 
 class Box:
-    id: str
-    color: str
-    number: int
-    shape: str
+    def __init__(self, id: str, color: str, number: int, shape: str):
+        self.id = id
+        self.color = color
+        self.number = number
+        self.shape = shape
 
 
 class Environment:
@@ -46,6 +47,12 @@ class Environment:
         self.include_inspect = include_inspect
         self.keys, self.boxes = self._create_keys_and_boxes()
         self.actions = self._get_all_possible_actions()
+
+        self.id_to_key, self.id_to_box = dict(), dict()
+        for key in self.keys:
+            self.id_to_key[key.id] = key
+        for box in self.boxes:
+            self.id_to_box[box.id] = box
 
         self.success_pairs = set()
 
@@ -56,8 +63,8 @@ class Environment:
             keys.append(Key(
                 id=key_data["id"][i],
                 color=key_data["color"][i],
-                number=key_data["number"][i] if key_data["number"][i] != 0 else None,
-                shape=key_data["shape"][i] if not np.isnan(key_data["shape"][i]) else None
+                number=key_data["number"][i],
+                shape=key_data["shape"][i]
             ))
         for i in range(len(box_data["id"])):
             boxes.append(Box(
@@ -88,4 +95,3 @@ class Environment:
             return True
         else:
             return False
-
