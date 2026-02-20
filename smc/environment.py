@@ -55,6 +55,7 @@ class Environment:
             self.id_to_box[box.id] = box
 
         self.success_pairs = set()
+        self.opened = set()
 
     def _create_keys_and_boxes(self):
         keys, boxes = list(), list()

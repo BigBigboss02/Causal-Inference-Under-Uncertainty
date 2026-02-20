@@ -1,19 +1,18 @@
-from this import d
+from collections import defaultdict
 from environment import Environment, Key, Box
 from typing import List, Optional, Dict, Tuple
 from generator import Generator
-from default_data import default_hypothesis_soc, default_hypothesis_id, default_hypothesis_code
+from default_data import default_hypothesis_soc, default_hypothesis_name, default_hypothesis_code
 from code_utils import execute_hypothesis_code
 import math, random
 
-
 class Particle:
 
-    def __init__(self, id, hypothesis, weight: float = 1.0):
+    def __init__(self, name, hypothesis, weight: float = 1.0):
 
         self.mode = 'soc' if isinstance(hypothesis, dict) else 'code'
 
-        self.id = id
+        self.name = name
         self.hypothesis = hypothesis
         self.weight = weight
     
@@ -30,7 +29,10 @@ class Engine:
     def __init__(self, config: Dict, environment: Environment, llm: Generator = None, logger = None):
         
         self.num_particles: int = config['num_particles']
-        self.theta: float = config['theta']
+        
+        # self.theta: float = config['theta']
+        self.alpha, self.beta = config['theta_distribution']
+
         self.ess_threshold: float = config['ess_threshold']
 
         self.environment: Environment = environment
@@ -41,14 +43,15 @@ class Engine:
         self.prior: str = config['prior'] # uniform or random
 
         self.particles = self._initialize_particles()
-
+        self.fails_per_box = defaultdict(lambda: 0)
         
+
     def _initialize_particles(self) -> List[Particle]:
 
         if self.mode == "soc":
-            hypotheses, ids = default_hypothesis_soc[:self.num_particles], default_hypothesis_id[:self.num_particles]
+            hypotheses, names = default_hypothesis_soc[:self.num_particles], default_hypothesis_name[:self.num_particles]
         elif self.mode == "code":
-            hypotheses, ids= self.llm.generate_hypotheses(self.num_particles)
+            hypotheses, names = self.llm.generate_hypotheses(self.num_particles)
         
         if self.prior == "uniform":
             priors = [(1.0 / self.num_particles) for _ in range(self.num_particles)]
@@ -57,7 +60,7 @@ class Engine:
             total = sum(priors)
             priors = [p / total for p in priors]
 
-        particles = [Particle(id=ids[i], hypothesis=hypotheses[i], weight=priors[i]) for i in range(self.num_particles)]
+        particles = [Particle(name=names[i], hypothesis=hypotheses[i], weight=priors[i]) for i in range(self.num_particles)]
         return particles
 
 
@@ -71,7 +74,7 @@ class Engine:
         
         resampled = list()
         for i in indices:
-            new_particle = Particle(id=self.particles[i].id, hypothesis=self.particles[i].hypothesis, weight=(1.0 / self.num_particles))
+            new_particle = Particle(name=self.particles[i].name, hypothesis=self.particles[i].hypothesis, weight=(1.0 / self.num_particles))
             resampled.append(new_particle)
         self.particles = resampled
             
@@ -100,13 +103,30 @@ class Engine:
         calculate information gain by inspect box action
         """
         pass
+
+    def _update_theta(self, box: Box, outcome: bool):
+
+        if box.id in self.environment.opened:
+            return
         
-    
+        if outcome is True:
+            self.alpha += 1.0
+            if box.id not in self.environment.opened:
+                self.beta -= self.fails_per_box[box.id]
+                self.environment.opened.add(box.id)
+        else:
+            self.fails_per_box[box.id] += 1
+            self.beta += 1.0
+
+            
     def _compute_likelihood(self, predict: bool, outcome: bool) -> float:
+        assert(self.alpha + self.beta > 0)  
+        prob_success = self.alpha / (self.alpha + self.beta)
+
         if predict and outcome:
-            return self.theta
+            return prob_success
         elif predict and not outcome:
-            return 1 - self.theta
+            return 1.0 - prob_success
         elif not predict and outcome:
             return 0.0
         else:
@@ -170,7 +190,8 @@ class Engine:
         
         # determine action that maximizes information gain
         max_info_gain = float('-inf')
-        best_action = None
+        best_actions = list()
+
         for (key, box) in actions:
             if key == 'inspect':
                 info_gain = self._compute_inspect_info_gain(box)
@@ -178,11 +199,14 @@ class Engine:
                 if (key.id, box.id) in self.environment.success_pairs: # box already opened with key
                     continue
                 info_gain = self._compute_info_gain(key, box)
+
             if info_gain > max_info_gain:
                 max_info_gain = info_gain
-                best_action = (key, box)
+                best_actions = [(key, box)]
+            elif info_gain == max_info_gain:
+                best_actions.append((key, box))
 
-        return best_action
+        return random.choice(best_actions)
 
         
     def run(self, max_trials: int) -> bool:
@@ -191,7 +215,7 @@ class Engine:
         while not self.environment.is_solved() and self.trial_count < max_trials:
             
             self.logger.log(f"TRIAL {self.trial_count + 1}")
-            self.logger.log(f"partcle ids: {[p.id for p in self.particles]}")
+            self.logger.log(f"partcle ids: {[p.name for p in self.particles]}")
             self.logger.log(f"particle weights: {[p.weight for p in self.particles]}")
 
             #if self.trial_count == 0:
@@ -203,9 +227,10 @@ class Engine:
             self.logger.log(f"Action chosen: ({key.id}, {box.id})")
             self.logger.log(f"Outcome: {outcome}")
 
+            self._update_theta(box, outcome)
             self._update_particle_weights(key, box, outcome)
 
-            self.logger.log(f"partcle ids: {[p.id for p in self.particles]}")
+            self.logger.log(f"partcle ids: {[p.name for p in self.particles]}")
             self.logger.log(f"particle weights: {[p.weight for p in self.particles]}")
 
             self.trial_count += 1

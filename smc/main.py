@@ -13,7 +13,7 @@ class Logger:
 
 smc_config = {
     "num_particles": 10,
-    "theta": 0.9,
+    "theta_distribution": (0.5, 0.5),
     "ess_threshold": 0.5,
     "mode": "soc",
     "prior": "uniform",
