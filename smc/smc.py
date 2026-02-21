@@ -8,12 +8,13 @@ import math, random
 
 class Particle:
 
-    def __init__(self, name, hypothesis, weight: float = 1.0):
+    def __init__(self, name, hypothesis, weight: float, prior: float):
 
         self.mode = 'soc' if isinstance(hypothesis, dict) else 'code'
 
         self.name = name
         self.hypothesis = hypothesis
+        self.prior = prior
         self.weight = weight
     
     def evaluate(self, key: Key, box: Box) -> bool:
@@ -26,7 +27,7 @@ class Particle:
 
 class Engine:
 
-    def __init__(self, config: Dict, environment: Environment, llm: Generator = None, logger = None):
+    def __init__(self, config: Dict, environment: Environment, proposal: Generator = None, logger = None):
         
         self.num_particles: int = config['num_particles']
         
@@ -36,11 +37,10 @@ class Engine:
         self.k_rejuvenate: int = config['k_rejuvenate']
 
         self.environment: Environment = environment
-        self.llm: Generator = llm
+        self.proposal: Generator = proposal
         self.logger = logger
 
         self.mode: str = config['mode']
-        self.prior: str = config['prior'] # uniform or random
 
         self.particles = self._initialize_particles()
         self.fails_per_box = defaultdict(lambda: 0)
@@ -48,19 +48,17 @@ class Engine:
 
     def _initialize_particles(self) -> List[Particle]:
 
-        if self.mode == "soc":
-            hypotheses, names = default_hypothesis_soc[:self.num_particles], default_hypothesis_name[:self.num_particles]
-        elif self.mode == "code":
-            hypotheses, names = self.llm.generate_hypotheses(self.num_particles)
-        
-        if self.prior == "uniform":
-            priors = [(1.0 / self.num_particles) for _ in range(self.num_particles)]
-        elif self.prior == "random":
-            priors = [random.random() for _ in range(self.num_particles)]
-            total = sum(priors)
-            priors = [p / total for p in priors]
+        particles = list()
 
-        particles = [Particle(name=names[i], hypothesis=hypotheses[i], weight=priors[i]) for i in range(self.num_particles)]
+        sampled = self.proposal.sample_from_dist(self.num_particles)
+        for i in range(self.num_particles):
+            id, type, prior = sampled[i]
+            if type == 'generator':
+                hypothesis, name = self.proposal.generate(evidence=list())
+            else:
+                hypothesis, name = self.proposal.hypotheses[id]
+            particles.append(Particle(name=name, hypothesis=hypothesis, weight=(1.0 / self.num_particles), prior=prior))
+        
         return particles
 
 
@@ -78,8 +76,59 @@ class Engine:
             resampled.append(new_particle)
         self.particles = resampled
     
+    def _compute_hypothesis_likelihood(self, hypothesis: Dict, evidence: List) -> float:
+
+        likelihood = 1.0
+        for key, box, outcome in evidence:
+            # if anything is observed for a pair in hypothesis
+            pred_match = any((h_key.id == key.id and h_box.id == box.id) for (h_key, h_box) in hypothesis.items())
+            if pred_match and outcome:
+                return 
+
+
     def _rejuvenate(self):
-        
+
+        def _compute_h_likelihood(hypothesis: Dict) -> float:
+            likelihood = 1.0
+            for key, box, outcome in self.evidence:
+                # if anything is observed for a pair in hypothesis
+                pred_match = any((h_key.id == key.id and h_box.id == box.id) for (h_key, h_box) in hypothesis.items())
+                likelihood = likelihood * self._compute_likelihood(pred_match, outcome)
+            return likelihood
+
+        # create copy of particles for safety
+        new_particles = [p.copy(deep=True) for p in self.particles]
+
+        for i in range(self.num_particles):
+            orig_p = new_particles[i]
+
+            id, type, prior = self.proposal.sample()
+            if type == 'generator':
+                # repeat until a non-duplicate is generated
+                while True:
+                    new_h, new_name = self.proposal.generate(self.evidence)
+                    is_duplicate = any(p.hypothesis == new_h for p in new_particles)
+                    if not is_duplicate: 
+                        break
+            else:
+                new_h, new_name = self.proposal.hypotheses[id]
+
+            new_h_likelihood = _compute_h_likelihood(new_h)
+            orig_h_likelihood = _compute_h_likelihood(orig_p.hypothesis)
+
+            # metropolis hastings
+            denom = orig_h_likelihood * orig_p.prior
+            if denom == 0:
+                # always reject
+                accept_prob = 0 
+            else:
+                accept_prob = min(1, (new_h_likelihood * prior) / denom)
+            
+            if random.random() <= accept_prob:
+                new_particles[i] = Particle(name=new_name, hypothesis=new_h, weight=new_particles[i].weight, prior=prior)
+            
+        self.particles = new_particles
+            
             
 
     def _compute_ess(self) -> float:
