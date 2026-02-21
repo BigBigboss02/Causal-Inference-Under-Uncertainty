@@ -32,8 +32,8 @@ class Engine:
         
         # self.theta: float = config['theta']
         self.alpha, self.beta = config['theta_distribution']
-
         self.ess_threshold: float = config['ess_threshold']
+        self.k_rejuvenate: int = config['k_rejuvenate']
 
         self.environment: Environment = environment
         self.llm: Generator = llm
@@ -77,6 +77,9 @@ class Engine:
             new_particle = Particle(name=self.particles[i].name, hypothesis=self.particles[i].hypothesis, weight=(1.0 / self.num_particles))
             resampled.append(new_particle)
         self.particles = resampled
+    
+    def _rejuvenate(self):
+        
             
 
     def _compute_ess(self) -> float:
@@ -182,6 +185,7 @@ class Engine:
         ess = self._compute_ess()
         if ess < self.num_particles * self.ess_threshold:
             self._resample()
+            self._rejuvenate()
 
     
     def _select_action(self):
