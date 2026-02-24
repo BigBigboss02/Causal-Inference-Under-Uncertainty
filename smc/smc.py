@@ -52,11 +52,11 @@ class Engine:
 
         sampled = self.proposal.sample_from_dist(self.num_particles)
         for i in range(self.num_particles):
-            id, type, prior = sampled[i]
+            name, type, prior = sampled[i]
             if type == 'generator':
                 hypothesis, name = self.proposal.generate(evidence=list())
             else:
-                hypothesis, name = self.proposal.hypotheses[id]
+                hypothesis = self.proposal.hypotheses[name]
             particles.append(Particle(name=name, hypothesis=hypothesis, weight=(1.0 / self.num_particles), prior=prior))
         
         return particles
@@ -72,7 +72,7 @@ class Engine:
         
         resampled = list()
         for i in indices:
-            new_particle = Particle(name=self.particles[i].name, hypothesis=self.particles[i].hypothesis, weight=(1.0 / self.num_particles))
+            new_particle = Particle(name=self.particles[i].name, hypothesis=self.particles[i].hypothesis, weight=(1.0 / self.num_particles), prior=self.particles[i].prior)
             resampled.append(new_particle)
         self.particles = resampled
     
@@ -102,7 +102,7 @@ class Engine:
         for i in range(self.num_particles):
             orig_p = new_particles[i]
 
-            id, type, prior = self.proposal.sample()
+            name, type, prior = self.proposal.sample()
             if type == 'generator':
                 # repeat until a non-duplicate is generated
                 while True:
@@ -111,7 +111,7 @@ class Engine:
                     if not is_duplicate: 
                         break
             else:
-                new_h, new_name = self.proposal.hypotheses[id]
+                new_h = self.proposal.hypotheses[id]
 
             new_h_likelihood = _compute_h_likelihood(new_h)
             orig_h_likelihood = _compute_h_likelihood(orig_p.hypothesis)

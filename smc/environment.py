@@ -14,10 +14,10 @@ key_data = {
 }
 
 box_data = {
-    "id": ["red", "pink", "cream", "purple", "teal"],
-    "color": ["red", "pink", "cream", "purple", "teal"],
-    "shape": ["moon", "cloud", "diamond", "heart", "triangle"], 
-    "count": [1, 2, 4, 3, 5],
+    "id": ["red", "pink", "purple", "white", "blue"],
+    "color": ["red", "pink", "purple", "white", "blue"],
+    "shape": ["moon", "cloud", "heart", "diamond", "triangle"], 
+    "count": [1, 2, 3, 4, 5],
     "position": [1, 2, 3, 4, 5],
 }
 
@@ -39,7 +39,6 @@ class Box:
         self.color = color
         self.number = number
         self.shape = shape
-
 
 class Environment:
     def __init__(self, include_inspect: bool = False):
