@@ -17,11 +17,19 @@ smc_config = {
     "ess_threshold": 0.5,
     "mode": "soc",
     "prior": "uniform",
+    "k_rejuvenate": 1, #fake
 }
+generator_config = {
+    "omega": 1.0,          # fake
+    "prop_random": 0.2     # fake
+}
+environment = Environment(include_inspect=False)
+
 max_trials = 5
 
 if __name__ == '__main__':
-    llm_generator = Generator()
+    # llm_generator = Generator()
+    llm_generator = Generator(generator_config, environment)
     environment = Environment(include_inspect=False)
     logger = Logger(logging=True)
 

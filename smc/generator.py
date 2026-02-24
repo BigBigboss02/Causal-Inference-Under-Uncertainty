@@ -44,7 +44,7 @@ class Generator:
         
         order_match = {"red": "red", "grey2": "pink", "green3": "white", "orange4": "purple", "yellow5": "blue",}
 
-        # 14 hypothesis for similar colors
+        # 14 hypothesis for similar colours
         fixed = {"purple": "purple", "pink": "pink", "red": "red"}
 
         sim_colour = list()

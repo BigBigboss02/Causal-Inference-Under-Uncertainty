@@ -45,6 +45,8 @@ class Engine:
         self.particles = self._initialize_particles()
         self.fails_per_box = defaultdict(lambda: 0)
         
+        # for result viewing purposes
+        self.history = [] 
 
     def _initialize_particles(self) -> List[Particle]:
 
@@ -285,6 +287,20 @@ class Engine:
 
             self.logger.log(f"partcle ids: {[p.name for p in self.particles]}")
             self.logger.log(f"particle weights: {[p.weight for p in self.particles]}")
+            
+            #here are updates made to history
+            t = self.trial_count
+            opened = len(self.environment.opened)
+            theta = self.alpha / (self.alpha + self.beta)
+            probs = {}
+            for p in self.particles:
+                probs[p.name] = probs.get(p.name, 0.0) + p.weight
+            self.history.append({
+                "t": t,
+                "opened": opened,
+                "theta": theta,
+                "probs": probs
+            })
 
             self.trial_count += 1
 

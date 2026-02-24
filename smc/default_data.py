@@ -79,7 +79,7 @@ default_hypothesis_soc = [
 default_hypothesis_code = [
     """
         def evaluate(key, box): 
-            return key.color == box.color
+            return key.colour == box.colour
     """,
     """
         def evaluate(key, box): 
