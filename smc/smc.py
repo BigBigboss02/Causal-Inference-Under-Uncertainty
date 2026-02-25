@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Tuple
 from generator import Generator
 from default_data import default_hypothesis_soc, default_hypothesis_name, default_hypothesis_code
 from code_utils import execute_hypothesis_code
-import math, random
+import math, random, copy
 
 class Particle:
 
@@ -27,7 +27,7 @@ class Particle:
 
 class Engine:
 
-    def __init__(self, config: Dict, environment: Environment, proposal: Generator = None, logger = None):
+    def __init__(self, config: Dict, env: Environment, proposal: Generator = None, logger = None):
         
         self.num_particles: int = config['num_particles']
         
@@ -36,7 +36,7 @@ class Engine:
         self.ess_threshold: float = config['ess_threshold']
         self.k_rejuvenate: int = config['k_rejuvenate']
 
-        self.environment: Environment = environment
+        self.env: Environment = env
         self.proposal: Generator = proposal
         self.logger = logger
 
@@ -44,6 +44,7 @@ class Engine:
 
         self.particles = self._initialize_particles()
         self.fails_per_box = defaultdict(lambda: 0)
+        self.evidence = list()
         
 
     def _initialize_particles(self) -> List[Particle]:
@@ -54,7 +55,7 @@ class Engine:
         for i in range(self.num_particles):
             name, type, prior = sampled[i]
             if type == 'generator':
-                hypothesis, name = self.proposal.generate(evidence=list())
+                hypothesis, name = self.proposal.generate()
             else:
                 hypothesis = self.proposal.hypotheses[name]
             particles.append(Particle(name=name, hypothesis=hypothesis, weight=(1.0 / self.num_particles), prior=prior))
@@ -75,15 +76,6 @@ class Engine:
             new_particle = Particle(name=self.particles[i].name, hypothesis=self.particles[i].hypothesis, weight=(1.0 / self.num_particles), prior=self.particles[i].prior)
             resampled.append(new_particle)
         self.particles = resampled
-    
-    def _compute_hypothesis_likelihood(self, hypothesis: Dict, evidence: List) -> float:
-
-        likelihood = 1.0
-        for key, box, outcome in evidence:
-            # if anything is observed for a pair in hypothesis
-            pred_match = any((h_key.id == key.id and h_box.id == box.id) for (h_key, h_box) in hypothesis.items())
-            if pred_match and outcome:
-                return 
 
 
     def _rejuvenate(self):
@@ -92,26 +84,52 @@ class Engine:
             likelihood = 1.0
             for key, box, outcome in self.evidence:
                 # if anything is observed for a pair in hypothesis
-                pred_match = any((h_key.id == key.id and h_box.id == box.id) for (h_key, h_box) in hypothesis.items())
+                pred_match = (hypothesis.get(key.id) == box.id)
                 likelihood = likelihood * self._compute_likelihood(pred_match, outcome)
             return likelihood
-
+        
         # create copy of particles for safety
-        new_particles = [p.copy(deep=True) for p in self.particles]
+        new_particles = copy.deepcopy(self.particles)
 
         for i in range(self.num_particles):
             orig_p = new_particles[i]
 
-            name, type, prior = self.proposal.sample()
-            if type == 'generator':
-                # repeat until a non-duplicate is generated
-                while True:
-                    new_h, new_name = self.proposal.generate(self.evidence)
-                    is_duplicate = any(p.hypothesis == new_h for p in new_particles)
-                    if not is_duplicate: 
+            while True: 
+                # sample from proposal
+                name, type, prior = self.proposal.sample()
+
+                if type == 'generator':
+                    non_dups_found = False
+
+                    # repeat until a non-duplicate is generated
+                    max_gen_trials = 50
+                    while max_gen_trials > 0:
+                        new_h, name = self.proposal.generate()
+                        if not any(p.hypothesis == new_h for p in self.particles):
+                            non_dups_found = True
+                            break
+                        max_gen_trials -= 1
+                    
+                    if non_dups_found:
                         break
-            else:
-                new_h = self.proposal.hypotheses[id]
+                else:
+                    new_h = self.proposal.hypotheses[name]
+                    break
+
+            """
+            while True:
+                name, type, prior = self.proposal.sample()
+           
+                if type == 'generator':
+                    existing_h = [p.hypothesis for p in self.particles]
+                    new_h, name = self.proposal.generate_non_duplicate(existing_h)
+                    if new_h is None:
+                        # no more non-duplicate random assignment, re-sample from proposal
+                        continue
+                else:
+                    new_h = self.proposal.hypotheses[name]
+                break
+            """
 
             new_h_likelihood = _compute_h_likelihood(new_h)
             orig_h_likelihood = _compute_h_likelihood(orig_p.hypothesis)
@@ -125,11 +143,9 @@ class Engine:
                 accept_prob = min(1, (new_h_likelihood * prior) / denom)
             
             if random.random() <= accept_prob:
-                new_particles[i] = Particle(name=new_name, hypothesis=new_h, weight=new_particles[i].weight, prior=prior)
+                new_particles[i] = Particle(name=name, hypothesis=new_h, weight=new_particles[i].weight, prior=prior)
             
         self.particles = new_particles
-            
-            
 
     def _compute_ess(self) -> float:
         """
@@ -141,14 +157,12 @@ class Engine:
         else:
             return 1.0 / sum(w**2 for w in weights)
 
-
     def _compute_entropy(self, particle_weights: List[float]) -> float:
         weights = [w for w in particle_weights if w > 0]
         if len(weights) <= 1:
             return 0.0
         else:
             return -1.0 * sum(w * math.log2(w) for w in weights)
-
 
     def _compute_inspect_info_gain(self, box: Box) -> float:
         """
@@ -158,18 +172,18 @@ class Engine:
 
     def _update_theta(self, box: Box, outcome: bool):
 
-        if box.id in self.environment.opened:
+        if box.id in self.env.opened:
             return
         
         if outcome is True:
             self.alpha += 1.0
-            if box.id not in self.environment.opened:
-                self.beta -= self.fails_per_box[box.id]
-                self.environment.opened.add(box.id)
+            if box.id not in self.env.opened:
+                self.beta = max(1e-9, self.beta - self.fails_per_box[box.id])
+                self.env.opened.add(box.id)
         else:
             self.fails_per_box[box.id] += 1
             self.beta += 1.0
-
+        
             
     def _compute_likelihood(self, predict: bool, outcome: bool) -> float:
         assert(self.alpha + self.beta > 0)  
@@ -199,18 +213,15 @@ class Engine:
 
             for particle in self.particles:
                 pred_outcome = particle.evaluate(key, box)
-                if pred_outcome == outcome:
-                    outcome_prob += particle.weight
                 likelihood = self._compute_likelihood(pred_outcome, outcome)
+                outcome_prob += particle.weight * likelihood
                 updated_weights.append(particle.weight * likelihood)
 
             # normalize updated weights
-            total = sum(updated_weights)
-            if total <= 0:
+            if outcome_prob == 0:
                 continue
-            updated_weights = [w / total for w in updated_weights if w > 0]
+            updated_weights = [w / outcome_prob for w in updated_weights if w > 0]
             new_entropy = self._compute_entropy(updated_weights)
-            
             expected_entropy += outcome_prob * new_entropy
         
         return current_entropy - expected_entropy
@@ -239,7 +250,7 @@ class Engine:
     
     def _select_action(self):
 
-        actions = self.environment.actions
+        actions = self.env.actions
         
         # determine action that maximizes information gain
         max_info_gain = float('-inf')
@@ -249,7 +260,7 @@ class Engine:
             if key == 'inspect':
                 info_gain = self._compute_inspect_info_gain(box)
             else:
-                if (key.id, box.id) in self.environment.success_pairs: # box already opened with key
+                if (key.id, box.id) in self.env.success_pairs: # box already opened with key
                     continue
                 info_gain = self._compute_info_gain(key, box)
 
@@ -265,17 +276,21 @@ class Engine:
     def run(self, max_trials: int) -> bool:
         
         self.trial_count = 0
-        while not self.environment.is_solved() and self.trial_count < max_trials:
+        while not self.env.is_solved() and self.trial_count < max_trials:
             
             self.logger.log(f"TRIAL {self.trial_count + 1}")
             self.logger.log(f"partcle ids: {[p.name for p in self.particles]}")
             self.logger.log(f"particle weights: {[p.weight for p in self.particles]}")
 
-            #if self.trial_count == 0:
-            #    key, box = self.environment.id_to_key['red'], self.environment.id_to_box['red']
+            if self.trial_count == 0:
+                key, box = self.env.id_to_key['red'], self.env.id_to_box['red']
 
             (key, box) = self._select_action()
-            outcome = self.environment.test_action(key, box)
+            outcome = self.env.test_action(key, box)
+
+            self.evidence.append((key, box, outcome))
+            if outcome is True:
+                self.proposal.prune_proposal_dist(key, box)
 
             self.logger.log(f"Action chosen: ({key.id}, {box.id})")
             self.logger.log(f"Outcome: {outcome}")
@@ -287,5 +302,7 @@ class Engine:
             self.logger.log(f"particle weights: {[p.weight for p in self.particles]}")
 
             self.trial_count += 1
+            print(self.trial_count)
+            print(len(self.env.success_pairs))
 
-        return self.environment.is_solved()
+        return self.env.is_solved()

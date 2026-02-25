@@ -11,19 +11,25 @@ class Logger:
         if self.logging:
             print(log_str)
 
+gen_config = {
+    "omega": 2.0,
+    "prop_random": 0.1
+}
+
 smc_config = {
-    "num_particles": 10,
+    "num_particles": 30,
     "theta_distribution": (0.5, 0.5),
     "ess_threshold": 0.5,
+    "k_rejuvenate": 30,
     "mode": "soc",
     "prior": "uniform",
 }
-max_trials = 5
+max_trials = 500
 
 if __name__ == '__main__':
-    llm_generator = Generator()
     environment = Environment(include_inspect=False)
+    generator = Generator(gen_config, environment)
     logger = Logger(logging=True)
 
-    smc_engine = Engine(smc_config, environment, llm_generator, logger)
+    smc_engine = Engine(smc_config, environment, generator, logger)
     smc_engine.run(max_trials=max_trials)
