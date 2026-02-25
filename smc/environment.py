@@ -8,14 +8,14 @@ configuration of keys and boxes as used in the experiment
 
 key_data = {
     "id": ["red", "pink", "grey2", "cloud", "orange4", "green3", "blue", "yellow5", "heart", "white", "triangle", "diamond", "purple"],
-    "color": ["red", "pink", "grey", "grey", "orange", "green", "blue", "yellow", "green", "white", "yellow", "orange", "purple"],
+    "colour": ["red", "pink", "grey", "grey", "orange", "green", "blue", "yellow", "green", "white", "yellow", "orange", "purple"],
     "number": [1, 6, 2, None, 4, 3, None, 5, None, 7, None, None, None],
     "shape": [None, None, None, "cloud", None, None, "star", None, "heart", None, "triangle", "diamond", "arrow"]
 }
 
 box_data = {
     "id": ["red", "pink", "purple", "white", "blue"],
-    "color": ["red", "pink", "purple", "white", "blue"],
+    "colour": ["red", "pink", "purple", "white", "blue"],
     "shape": ["moon", "cloud", "heart", "diamond", "triangle"], 
     "count": [1, 2, 3, 4, 5],
     "position": [1, 2, 3, 4, 5],
@@ -27,16 +27,16 @@ key_box_mapping = {
 
 
 class Key:
-    def __init__(self, id: str, color: str, number: Optional[int], shape: Optional[str]):
+    def __init__(self, id: str, colour: str, number: Optional[int], shape: Optional[str]):
         self.id = id
-        self.color = color
+        self.colour = colour
         self.number = number
         self.shape = shape
 
 class Box:
-    def __init__(self, id: str, color: str, number: int, shape: str):
+    def __init__(self, id: str, colour: str, number: int, shape: str):
         self.id = id
-        self.color = color
+        self.colour = colour
         self.number = number
         self.shape = shape
 
@@ -62,14 +62,14 @@ class Environment:
         for i in range(len(key_data["id"])):
             keys.append(Key(
                 id=key_data["id"][i],
-                color=key_data["color"][i],
+                colour=key_data["colour"][i],
                 number=key_data["number"][i],
                 shape=key_data["shape"][i]
             ))
         for i in range(len(box_data["id"])):
             boxes.append(Box(
                 id=box_data["id"][i],
-                color=box_data["color"][i],
+                colour=box_data["colour"][i],
                 number=box_data["count"][i],
                 shape=box_data["shape"][i]
             ))

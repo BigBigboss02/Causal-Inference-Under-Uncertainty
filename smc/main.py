@@ -24,9 +24,11 @@ smc_config = {
     "mode": "soc",
     "prior": "uniform",
 }
+
 max_trials = 500
 
 if __name__ == '__main__':
+
     environment = Environment(include_inspect=False)
     generator = Generator(gen_config, environment)
     logger = Logger(logging=True)
