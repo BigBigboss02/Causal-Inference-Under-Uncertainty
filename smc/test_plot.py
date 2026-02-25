@@ -31,7 +31,7 @@ fake_history = [
     }
 ]
 
-from plot import Plotter
+from smc.plotter import Plotter
 
 plotter = Plotter(fake_history)
 plotter.plot_boxes_opened_over_trials(show=True)

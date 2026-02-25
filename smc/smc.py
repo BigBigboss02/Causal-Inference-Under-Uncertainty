@@ -303,9 +303,9 @@ class Engine:
             self.logger.log(f"partcle ids: {[p.name for p in self.particles]}")
             self.logger.log(f"particle weights: {[p.weight for p in self.particles]}")
             
-            #here are updates made to history
+            # for plotting at the end of trial
             t = self.trial_count
-            opened = len(self.environment.opened)
+            opened = len(self.env.opened)
             theta = self.alpha / (self.alpha + self.beta)
             probs = {}
             for p in self.particles:
@@ -316,9 +316,7 @@ class Engine:
                 "theta": theta,
                 "probs": probs
             })
-
+            
             self.trial_count += 1
-            print(self.trial_count)
-            print(len(self.env.success_pairs))
 
-        return self.env.is_solved()
+        return self.history
