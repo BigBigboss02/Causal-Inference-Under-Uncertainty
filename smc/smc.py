@@ -96,42 +96,11 @@ class Engine:
         for i in range(self.num_particles):
             orig_p = new_particles[i]
 
-            while True: 
-                # sample from proposal
-                name, type, prior = self.proposal.sample()
-
-                if type == 'generator':
-                    non_dups_found = False
-
-                    # repeat until a non-duplicate is generated
-                    max_gen_trials = 50
-                    while max_gen_trials > 0:
-                        new_h, name = self.proposal.generate()
-                        if not any(p.hypothesis == new_h for p in self.particles):
-                            non_dups_found = True
-                            break
-                        max_gen_trials -= 1
-                    
-                    if non_dups_found:
-                        break
-                else:
-                    new_h = self.proposal.hypotheses[name]
-                    break
-
-            """
-            while True:
-                name, type, prior = self.proposal.sample()
-           
-                if type == 'generator':
-                    existing_h = [p.hypothesis for p in self.particles]
-                    new_h, name = self.proposal.generate_non_duplicate(existing_h)
-                    if new_h is None:
-                        # no more non-duplicate random assignment, re-sample from proposal
-                        continue
-                else:
-                    new_h = self.proposal.hypotheses[name]
-                break
-            """
+            name, type, prior = self.proposal.sample()
+            if type == 'generator':
+                new_h, name = self.proposal.generate()
+            else:
+                new_h = self.proposal.hypotheses[name]
 
             new_h_likelihood = _compute_h_likelihood(new_h)
             orig_h_likelihood = _compute_h_likelihood(orig_p.hypothesis)
@@ -185,7 +154,6 @@ class Engine:
         else:
             self.fails_per_box[box.id] += 1
             self.beta += 1.0
-        
             
     def _compute_likelihood(self, predict: bool, outcome: bool) -> float:
         assert(self.alpha + self.beta > 0)  
