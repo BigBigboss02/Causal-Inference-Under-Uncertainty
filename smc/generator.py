@@ -12,6 +12,7 @@ class Generator:
         self.prop_random = config['prop_random']
         
         self.hypotheses: Dict[str, Dict] = dict()
+        self.num_generated = 0
 
         self._build_proposal_dist()
 
@@ -150,9 +151,21 @@ class Generator:
         for box in not_opened_boxes:
             _sample_key_for_box(hypothesis, box)
 
-        return hypothesis, 'generator'
+        # check if generated hypothesis already exists
+        for h_name in self.hypotheses:
+            if self.hypotheses[h_name] == hypothesis:
+                return hypothesis, h_name
+        
+        # if not exist
+        self.num_generated += 1
+        h_name = f'generator_{self.num_generated}'
+        self.hypotheses[h_name] = hypothesis
+        return hypothesis, h_name
     
-
+    
+    """
+    NOT USED
+    """
     def generate_non_duplicate(self, existing_h: List[Dict]) -> Tuple[Dict, str]:
 
         # for opened boxes, key-box pairs are fixed in hypothesis
