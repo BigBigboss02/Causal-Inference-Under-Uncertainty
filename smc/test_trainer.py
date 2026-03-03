@@ -24,6 +24,7 @@ D = [
     ("red",     "pink",   0),
     ("grey2",   "red",    0),
     ("red",     "red",    1),
+    ("red",     "red",    1),
 ]
 
 
