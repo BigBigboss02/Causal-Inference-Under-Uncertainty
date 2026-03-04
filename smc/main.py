@@ -1,8 +1,7 @@
-from smc import Engine
+from smc_soc import Engine
 from environment import Environment
-from generator import Generator
-from plotter import Plotter
-from plotter2 import Plotter2
+from gen_soc import Generator
+from utils.plotter import Plotter2
 
 
 class Logger:
@@ -22,12 +21,12 @@ smc_config = {
     "num_particles": 30,
     "init_theta": (0.5, 0.5),
     "ess_threshold": 0.5,
-    "k_rejuvenate": 30,
+    'skill': True,
     "mode": "soc",
     "prior": "uniform",
 }
 
-max_trials = 500
+max_trials = 70
 
 if __name__ == '__main__':
 

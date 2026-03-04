@@ -4,10 +4,7 @@ from dataclasses import dataclass
 from typing import Iterable, List, Tuple, Optional, Dict, Any
 from smc import Engine
 from environment import Environment
-from generator import Generator
-
-
-
+from smc.gen_soc import Generator
 
     
 class SkillOnlyParams:

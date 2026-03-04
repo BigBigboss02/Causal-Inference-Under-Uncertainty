@@ -1,16 +1,14 @@
 from collections import defaultdict
 from environment import Environment, Key, Box
-from typing import List, Optional, Dict, Tuple
-from generator import Generator
-from default_data import default_hypothesis_soc, default_hypothesis_name, default_hypothesis_code
-from code_utils import execute_hypothesis_code
+from typing import List, Dict
+
+from gen_soc import Generator
+
 import math, random, copy
 
 class Particle:
 
-    def __init__(self, name, hypothesis, weight: float, prior: float):
-
-        self.mode = 'soc' if isinstance(hypothesis, dict) else 'code'
+    def __init__(self, name: str, hypothesis: Dict, weight: float, prior: float):
 
         self.name = name
         self.hypothesis = hypothesis
@@ -18,11 +16,9 @@ class Particle:
         self.weight = weight
     
     def evaluate(self, key: Key, box: Box) -> bool:
-        if self.mode == 'soc':
-            result = (self.hypothesis.get(key.id) == box.id)
-        elif self.mode == 'code':
-            result = execute_hypothesis_code(self.hypothesis, key, box)
-        return result
+        
+        return (self.hypothesis.get(key.id) == box.id)
+
 
 
 class Engine:
@@ -31,18 +27,17 @@ class Engine:
         
         self.num_particles: int = config['num_particles']
 
+        self.skill: bool = config['skill']
+
         # initialize theta distribution
         self.alpha0, self.beta0 = config['init_theta']
         self.alpha, self.beta = config['init_theta']
 
         self.ess_threshold: float = config['ess_threshold']
-        self.k_rejuvenate: int = config['k_rejuvenate']
 
         self.env: Environment = env
         self.proposal: Generator = proposal
         self.logger = logger
-
-        self.mode: str = config['mode']
 
         self.particles = self._initialize_particles()
 
@@ -67,8 +62,8 @@ class Engine:
                 hypothesis, name = self.proposal.generate()
             else:
                 hypothesis = self.proposal.hypotheses[name]
-            particles.append(Particle(name=name, hypothesis=hypothesis, weight=(1.0 / self.num_particles), prior=prior))
-        
+            particles.append(Particle(name=name, hypothesis=hypothesis, weight=(1.0 / self.num_particles), prior=prior))  
+            
         return particles
 
 
@@ -170,7 +165,6 @@ class Engine:
         self.alpha = max(1e-9, self.alpha)
         self.beta = max(1e-9, self.beta)
 
-
     def _update_theta(self, box: Box, outcome: bool):
 
         if box.id in self.env.opened:
@@ -186,8 +180,13 @@ class Engine:
             self.beta += 1.0
             
     def _compute_likelihood(self, predict: bool, outcome: bool) -> float:
-        assert(self.alpha + self.beta > 0)  
-        prob_success = self.alpha / (self.alpha + self.beta)
+
+        if self.skill:
+            # skill mode: use theta distribution
+            assert(self.alpha + self.beta > 0)  
+            prob_success = self.alpha / (self.alpha + self.beta)
+        else:
+            prob_success = 1.0
 
         if predict and outcome:
             return prob_success
@@ -294,8 +293,9 @@ class Engine:
             self.logger.log(f"Action chosen: ({key.id}, {box.id})")
             self.logger.log(f"Outcome: {outcome}")
 
-            # self._update_theta(box, outcome)
-            self._compute_theta()
+            if self.skill:
+                self._compute_theta()
+
             self._update_particle_weights(key, box, outcome)
 
             self.logger.log(f"partcle ids: {[p.name for p in self.particles]}")
