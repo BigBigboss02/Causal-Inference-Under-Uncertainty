@@ -20,7 +20,7 @@ gen_config = {
 
 smc_config = {
     "num_particles": 30,
-    "theta_distribution": (0.5, 0.5),
+    "init_theta": (0.5, 0.5),
     "ess_threshold": 0.5,
     "k_rejuvenate": 30,
     "mode": "soc",

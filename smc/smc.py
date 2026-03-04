@@ -30,9 +30,11 @@ class Engine:
     def __init__(self, config: Dict, env: Environment, proposal: Generator = None, logger = None):
         
         self.num_particles: int = config['num_particles']
-        
-        # self.theta: float = config['theta']
-        self.alpha, self.beta = config['theta_distribution']
+
+        # initialize theta distribution
+        self.alpha0, self.beta0 = config['init_theta']
+        self.alpha, self.beta = config['init_theta']
+
         self.ess_threshold: float = config['ess_threshold']
         self.k_rejuvenate: int = config['k_rejuvenate']
 
@@ -43,6 +45,11 @@ class Engine:
         self.mode: str = config['mode']
 
         self.particles = self._initialize_particles()
+
+        # for theta update
+        # new update mechanism (_compute_theta only requires fail_count and succ_count)
+        self.succ_count = defaultdict(lambda: 0)
+        self.fail_count = defaultdict(lambda: 0)
         self.fails_per_box = defaultdict(lambda: 0)
         self.evidence = list()
         
@@ -140,6 +147,29 @@ class Engine:
         calculate information gain by inspect box action
         """
         pass
+    
+    def _compute_theta(self):
+
+        self.alpha, self.beta = self.alpha0, self.beta0
+
+        # for each key-box pair in history
+        # compute combined weight of hypotheses that predict open
+        # compute success/failure
+        open_prob = defaultdict(lambda: 0.0)
+        for (key, box, _) in self.evidence:
+            if (key.id, box.id) in open_prob:
+                continue
+            else:
+                open_prob[(key.id, box.id)] = sum(p.weight for p in self.particles if p.evaluate(key, box))
+        
+        for kb_pair in open_prob.keys():
+            self.alpha += open_prob[kb_pair] * self.succ_count[kb_pair]
+            self.beta += open_prob[kb_pair] * self.fail_count[kb_pair]
+        
+        # prevent collapse
+        self.alpha = max(1e-9, self.alpha)
+        self.beta = max(1e-9, self.beta)
+
 
     def _update_theta(self, box: Box, outcome: bool):
 
@@ -196,7 +226,6 @@ class Engine:
         
         return current_entropy - expected_entropy
     
-    
     def _update_particle_weights(self, key: Key, box: Box, outcome: bool):
         """
         update weight of each particle based on whether outcome matches with hypothesis
@@ -217,7 +246,6 @@ class Engine:
             self._resample()
             self._rejuvenate()
 
-    
     def _select_action(self):
 
         actions = self.env.actions
@@ -249,8 +277,6 @@ class Engine:
         while not self.env.is_solved() and self.trial_count < max_trials:
             
             self.logger.log(f"TRIAL {self.trial_count + 1}")
-            self.logger.log(f"partcle ids: {[p.name for p in self.particles]}")
-            self.logger.log(f"particle weights: {[p.weight for p in self.particles]}")
 
             if self.trial_count == 0:
                 key, box = self.env.id_to_key['red'], self.env.id_to_box['red']
@@ -261,19 +287,23 @@ class Engine:
             self.evidence.append((key, box, outcome))
             if outcome is True:
                 self.proposal.prune_proposal_dist(key, box)
-
+                self.succ_count[(key.id, box.id)] += 1
+            else:
+                self.fail_count[(key.id, box.id)] += 1
+            
             self.logger.log(f"Action chosen: ({key.id}, {box.id})")
             self.logger.log(f"Outcome: {outcome}")
 
-            self._update_theta(box, outcome)
+            # self._update_theta(box, outcome)
+            self._compute_theta()
             self._update_particle_weights(key, box, outcome)
 
             self.logger.log(f"partcle ids: {[p.name for p in self.particles]}")
-            self.logger.log(f"particle weights: {[p.weight for p in self.particles]}")
-            
+            self.logger.log(f"number opened: {len(self.env.success_pairs)}")
+
             # for plotting at the end of trial
             t = self.trial_count
-            opened = len(self.env.opened)
+            opened = len(self.env.success_pairs)
             theta = self.alpha / (self.alpha + self.beta)
             probs = {}
             for p in self.particles:
