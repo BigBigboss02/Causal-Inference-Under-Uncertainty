@@ -15,7 +15,8 @@ class Logger:
 
 gen_config = {
     "omega": 2.0,
-    "prop_random": 0.1
+    "prop_random": 0.1,
+    "train": False,
 }
 
 smc_config = {

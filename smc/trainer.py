@@ -9,18 +9,6 @@ from generator import Generator
 
 
 
-    
-class SkillOnlyParams:
-    # Parameters for the current 'skill-only' model: theta ~ Beta(alpha0, beta0)
-    def __init__(self, alpha0: float, beta0: float):
-        self.alpha0 = alpha0
-        self.beta0 = beta0
-
-
-class StrategyParams:
-    # Keep empty for now; add fields when you start fitting strategies.
-    extras: Optional[Dict[str, Any]] = None
-
 
 class BoxTaskTrainer:
 
@@ -62,10 +50,8 @@ class BoxTaskTrainer:
         return ll
 
     def training_engine(
-        self,
-        skill: SkillOnlyParams,
-        strategy: Optional[StrategyParams],
-    ):
+        self):
+
         env = Environment(include_inspect=False)
 
         gen_config = {
