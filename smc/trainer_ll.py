@@ -5,8 +5,8 @@ from itertools import product
 from typing import Iterable, List, Tuple, Dict, Any, Optional
 
 from environment import Environment
-from generator import Generator
-from smc import Engine
+from gen_soc import Generator
+from smc_soc import Engine
 
 
 class BoxTaskTrainer:
@@ -210,12 +210,20 @@ class BoxTaskTrainer:
         }
         generator = Generator(gen_config, env)
 
+        # smc_config: Dict[str, Any] = {
+        #     "num_particles": self.num_particles,
+        #     "theta_distribution": (params.alpha0, params.beta0),
+        #     "ess_threshold": params.ess_threshold,
+        #     "k_rejuvenate": params.k_rejuvenate,
+        #     'skill': False,
+        #     "mode": "soc",
+        # }
+        # engine = Engine(smc_config, env, generator)
         smc_config: Dict[str, Any] = {
             "num_particles": self.num_particles,
-            "theta_distribution": (params.alpha0, params.beta0),
+            "init_theta": (params.alpha0, params.beta0),   # <-- REQUIRED by new Engine
             "ess_threshold": params.ess_threshold,
-            "k_rejuvenate": params.k_rejuvenate,
-            "mode": "soc",
+            "skill": True,                                 # <-- set True if you want alpha/beta to matter
         }
         engine = Engine(smc_config, env, generator)
         return env, generator, engine
@@ -228,25 +236,17 @@ class BoxTaskTrainer:
             p_out += particle.weight * engine._compute_likelihood(pred, outcome)
         return p_out
 
-    def _update_state(
-        self,
-        env: Environment,
-        generator: Generator,
-        engine: Engine,
-        key,
-        box,
-        kid: str,
-        bid: str,
-        outcome: bool,
-    ) -> None:
-        # evidence for MH rejuvenation
+    def _update_state(self, env, generator, engine, key, box, kid, bid, outcome) -> None:
         engine.evidence.append((key, box, outcome))
 
-        # prune proposals after a success (same as Engine.run)
         if outcome is True:
-            env.success_pairs.add((kid, bid))
             generator.prune_proposal_dist(key, box)
+            engine.succ_count[(kid, bid)] += 1
+        else:
+            engine.fail_count[(kid, bid)] += 1
 
-        engine._update_theta(box, outcome)
+        if engine.skill:
+            engine._compute_theta()
+
         engine._update_particle_weights(key, box, outcome)
         engine.trial_count = getattr(engine, "trial_count", 0) + 1
