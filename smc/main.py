@@ -24,6 +24,7 @@ smc_config = {
     'skill': True,
     "mode": "soc",
     "prior": "uniform",
+    "model": "gpt-4o", #or "deepseek-chat"
 }
 
 max_trials = 70
