@@ -1,4 +1,5 @@
 import os
+import re
 from typing import List, Tuple
 
 from llm.code import execute_hypothesis_code, check_valid_program
@@ -7,30 +8,43 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 class LLM:
-    def __init__(self):
+    def __init__(self, model: str = 'gpt-4o'):
         
         self.h_idx = 0
+        self.model = model
+        
+        if 'gpt' in model:
+            self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        elif 'deepseek' in model:
+            self.client = OpenAI(
+                api_key=os.getenv('DEEPSEEK_API_KEY'),
+                base_url="https://api.deepseek.com"
+            )
+        else:
+            #default to chat if unknown
+            self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+    def _clean_response(self, text: str) -> str:
+        #remove md code blocks if present, models sometimes respond
+        code_match = re.search(r'```python\n(.*?)```', text, re.DOTALL)
+        if code_match:
+            return code_match.group(1).strip()
+        code_match = re.search(r'```\n(.*?)```', text, re.DOTALL)
+        if code_match:
+            return code_match.group(1).strip()
+        return text.strip()
 
     def get_completion(self, sys_prompt: str, user_prompt: str, k: int = 1):
-
-        response = client.responses.create(
-            model='gpt-4',
-            input=[
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
                 {"role": "system", "content": sys_prompt},
                 {"role": "user", "content": user_prompt}
             ]
         )
-
-        output_texts = list()
-        for out in response.output:
-            if out.type == 'message':
-                for c in out.content:
-                    if c.type == 'output_text':
-                        output_texts.append(c.text)
-        return output_texts[0]
+        return self._clean_response(response.choices[0].message.content)
 
     def generate(self, evidence: List) -> str:
         
