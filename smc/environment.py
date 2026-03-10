@@ -14,10 +14,10 @@ key_data = {
 }
 
 box_data = {
-    "id": ["red", "pink", "purple", "white", "blue"],
-    "color": ["red", "pink", "purple", "white", "blue"],
-    "shape": ["moon", "cloud", "heart", "diamond", "triangle"], 
-    "count": [1, 2, 3, 4, 5],
+    "id": ["red", "pink", "white", "purple", "blue"],
+    "color": ["red", "pink", "white", "purple", "blue"],
+    "shape": ["moon", "cloud", "diamond", "heart", "triangle"], 
+    "count": [1, 2, 4, 3, 5],
     "position": [1, 2, 3, 4, 5],
 }
 

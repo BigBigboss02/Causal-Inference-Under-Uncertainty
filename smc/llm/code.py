@@ -16,20 +16,10 @@ def check_valid_program(code: str) -> bool:
     except Exception:
         print(f'Invalid program generated:\n{code}')
         return False
-
-    # check dummy input
-    func = namespace['try_open']
-    try:
-        result = func('dummy_key', 'dummy_box')
-    except Exception:
-        print(f'Invalid program generated:\n{code}')
-        return False
-
-    # return boolean return
-    if not isinstance(result, bool):
-        print(f'Invalid program generated:\n{code}')
-        return False
+    
     return True
+
+
 
 def execute_hypothesis_code(code: str, key_id: str, box_id: str) -> bool:
 

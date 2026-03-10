@@ -37,6 +37,8 @@ class SPBaseline:
         
     def _select_action(self):
 
+        
+
         key, box = 'dummy', 'dummy'
         return (key, box)
     

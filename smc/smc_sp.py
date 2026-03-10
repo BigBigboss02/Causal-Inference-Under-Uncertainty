@@ -1,32 +1,31 @@
 from collections import defaultdict
 from environment import Environment, Key, Box
 from typing import List, Dict
+from llm.code import execute_hypothesis_code
 
-from gen_soc import Generator
+from llm.llm import LLM
 
 import math, random, copy
 
 class Particle:
 
-    def __init__(self, name: str, hypothesis: Dict, weight: float, prior: float):
+    def __init__(self, name: str, hypothesis: str, weight: float):
 
         self.name = name
         self.hypothesis = hypothesis
-        self.prior = prior
         self.weight = weight
     
     def evaluate(self, key: Key, box: Box) -> bool:
         
-        return (self.hypothesis.get(key.id) == box.id)
-
+        return execute_hypothesis_code(self.hypothesis, key, box)
 
 
 class Engine:
 
-    def __init__(self, config: Dict, env: Environment, proposal: Generator = None, logger = None):
+    def __init__(self, config: Dict, env: Environment, llm: LLM = None, logger = None):
         
         self.num_particles: int = config['num_particles']
-        self.skill: bool = config['skill']
+        self.smc: bool = config['smc']
 
         # initialize theta distribution
         self.alpha0, self.beta0 = config['init_theta']
@@ -35,35 +34,24 @@ class Engine:
         self.ess_threshold: float = config['ess_threshold']
 
         self.env: Environment = env
-        self.proposal: Generator = proposal
+        self.llm: LLM = llm
         self.logger = logger
 
         self.particles = self._initialize_particles()
 
-        # for theta update
-        # new update mechanism (_compute_theta only requires fail_count and succ_count)
         self.succ_count = defaultdict(lambda: 0)
         self.fail_count = defaultdict(lambda: 0)
         self.evidence = list()
         
-        # for result viewing purposes
-        self.history = [] 
 
     def _initialize_particles(self) -> List[Particle]:
 
         particles = list()
-
-        sampled = self.proposal.sample_from_dist(self.num_particles)
         for i in range(self.num_particles):
-            name, type, prior = sampled[i]
-            if type == 'generator':
-                hypothesis, name = self.proposal.generate()
-            else:
-                hypothesis = self.proposal.hypotheses[name]
-            particles.append(Particle(name=name, hypothesis=hypothesis, weight=(1.0 / self.num_particles), prior=prior))  
-            
-        return particles
+            hypothesis, name = self.llm.generate(evidence=[])
+            particles.append(Particle(name=name, hypothesis=hypothesis, weight=(1.0 / self.num_particles)))
 
+        return particles
 
     def _resample(self):
         weights = [p.weight for p in self.particles]
@@ -75,48 +63,35 @@ class Engine:
         
         resampled = list()
         for i in indices:
-            new_particle = Particle(name=self.particles[i].name, hypothesis=self.particles[i].hypothesis, weight=(1.0 / self.num_particles), prior=self.particles[i].prior)
+            new_particle = Particle(name=self.particles[i].name, hypothesis=self.particles[i].hypothesis, weight=(1.0 / self.num_particles))
             resampled.append(new_particle)
         self.particles = resampled
 
 
     def _rejuvenate(self):
 
-        def _compute_h_likelihood(hypothesis: Dict) -> float:
+        def _compute_h_likelihood(hypothesis: str) -> float:
             likelihood = 1.0
             for key, box, outcome in self.evidence:
                 # if anything is observed for a pair in hypothesis
-                pred_match = (hypothesis.get(key.id) == box.id)
+                pred_match = execute_hypothesis_code(hypothesis, key, box)
                 likelihood = likelihood * self._compute_likelihood(pred_match, outcome)
             return likelihood
         
-        # create copy of particles for safety
-        new_particles = copy.deepcopy(self.particles)
-
+        # find worst performing hypothesis
+        worst_h_idx = list()
+        worst_h_likelihood = float('inf')
         for i in range(self.num_particles):
-            orig_p = new_particles[i]
+            h_likelihood = _compute_h_likelihood(self.particles[i].hypothesis)
+            if h_likelihood < worst_h_likelihood:
+                worst_h_likelihood = h_likelihood
+                worst_h_idx.append(i)
+        # tie break randomly
+        worst_h_idx = random.choice(worst_h_idx)
+        worst_h = self.particles[worst_h_idx].hypothesis
 
-            name, type, prior = self.proposal.sample()
-            if type == 'generator':
-                new_h, name = self.proposal.generate()
-            else:
-                new_h = self.proposal.hypotheses[name]
-
-            new_h_likelihood = _compute_h_likelihood(new_h)
-            orig_h_likelihood = _compute_h_likelihood(orig_p.hypothesis)
-
-            # metropolis hastings
-            denom = orig_h_likelihood * orig_p.prior
-            if denom == 0:
-                # always reject
-                accept_prob = 0 
-            else:
-                accept_prob = min(1, (new_h_likelihood * prior) / denom)
-            
-            if random.random() <= accept_prob:
-                new_particles[i] = Particle(name=name, hypothesis=new_h, weight=new_particles[i].weight, prior=prior)
-            
-        self.particles = new_particles
+        new_h, new_name = self.llm.refine(self.evidence, worst_h)
+        self.particles[worst_h_idx] = Particle(name=new_name, hypothesis=new_h, weight=self.particles[worst_h_idx].weight)
 
     def _compute_ess(self) -> float:
         """
@@ -162,8 +137,24 @@ class Engine:
         # prevent collapse
         self.alpha = max(1e-9, self.alpha)
         self.beta = max(1e-9, self.beta)
+
+    def _update_theta(self, box: Box, outcome: bool):
+
+        if box.id in self.env.opened:
+            return
+        
+        if outcome is True:
+            self.alpha += 1.0
+            if box.id not in self.env.opened:
+                self.beta = max(1e-9, self.beta - self.fails_per_box[box.id])
+                self.env.opened.add(box.id)
+        else:
+            self.fails_per_box[box.id] += 1
+            self.beta += 1.0
             
     def _compute_likelihood(self, predict: bool, outcome: bool) -> float:
+        
+        self.skill = True
 
         if self.skill:
             # skill mode: use theta distribution
@@ -225,7 +216,7 @@ class Engine:
 
         # get effective sample size
         ess = self._compute_ess()
-        if ess < self.num_particles * self.ess_threshold:
+        if True: #ess < self.num_particles * self.ess_threshold:
             self._resample()
             self._rejuvenate()
 
@@ -257,6 +248,7 @@ class Engine:
     def run(self, max_trials: int) -> bool:
         
         self.trial_count = 0
+
         while not self.env.is_solved() and self.trial_count < max_trials:
             
             self.logger.log(f"TRIAL {self.trial_count + 1}")
@@ -266,7 +258,6 @@ class Engine:
 
             self.evidence.append((key, box, outcome))
             if outcome is True:
-                self.proposal.prune_proposal_dist(key, box)
                 self.succ_count[(key.id, box.id)] += 1
             else:
                 self.fail_count[(key.id, box.id)] += 1
@@ -281,21 +272,7 @@ class Engine:
 
             self.logger.log(f"partcle ids: {[p.name for p in self.particles]}")
             self.logger.log(f"number opened: {len(self.env.success_pairs)}")
-
-            # for plotting at the end of trial
-            t = self.trial_count
-            opened = len(self.env.success_pairs)
-            theta = self.alpha / (self.alpha + self.beta)
-            probs = {}
-            for p in self.particles:
-                probs[p.name] = probs.get(p.name, 0.0) + p.weight
-            self.history.append({
-                "t": t,
-                "opened": opened,
-                "theta": theta,
-                "probs": probs
-            })
             
             self.trial_count += 1
 
-        return self.history
+        return "yes"

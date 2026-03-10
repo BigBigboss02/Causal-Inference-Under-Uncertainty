@@ -3,9 +3,9 @@ from typing import List, Dict
 
 from llm.llm import LLM
 from llm.prompt import init_prompts, replace_prompts
-from utils.code import check_valid_program
+from llm.code import check_valid_program
 
-class LlmGenerator:
+class Generator:
 
     def __init__(self, config: Dict, env: Environment, logger):
         
