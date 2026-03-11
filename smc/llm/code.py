@@ -1,4 +1,5 @@
 import ast
+from environment import Key, Box
 
 def check_valid_program(code: str) -> bool:
 
@@ -21,9 +22,9 @@ def check_valid_program(code: str) -> bool:
 
 
 
-def execute_hypothesis_code(code: str, key_id: str, box_id: str) -> bool:
+def execute_hypothesis_code(code: str, key: Key, box: Box) -> bool:
 
     # assume functional code
     namespace = {}
     exec(code, namespace)
-    return namespace['try_open'](key_id, box_id)
+    return namespace['predict'](key, box)

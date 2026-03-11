@@ -54,8 +54,6 @@ class LLM:
             while True:
                 hypothesis = self.get_completion(sys_prompt, user_prompt)
 
-                print(f'hypothesis generated: {hypothesis}')
-
                 if check_valid_program(hypothesis):
                     self.h_idx += 1
                     return hypothesis, f'generated_{self.h_idx}'
@@ -75,8 +73,9 @@ class LLM:
         while True:
             hypothesis = self.get_completion(sys_prompt, user_prompt)
 
-            print(f'hypothesis refined: {hypothesis}')
-
+            print('Refined')
+            print(hypothesis)
+            
             if check_valid_program(hypothesis):
                 self.h_idx += 1
                 return hypothesis, f'generated_{self.h_idx}'

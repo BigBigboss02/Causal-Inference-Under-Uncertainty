@@ -282,8 +282,10 @@ class Engine:
             self.logger.log(f"partcle ids: {[p.name for p in self.particles]}")
             self.logger.log(f"number opened: {len(self.env.success_pairs)}")
 
+            self.trial_count += 1
+
             # for plotting at the end of trial
-            t = self.trial_count
+            t = self.trial_count - 1
             opened = len(self.env.success_pairs)
             theta = self.alpha / (self.alpha + self.beta)
             probs = {}
@@ -296,6 +298,5 @@ class Engine:
                 "probs": probs
             })
             
-            self.trial_count += 1
 
         return self.history

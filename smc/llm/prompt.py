@@ -30,13 +30,32 @@ env_prompt ='''
             The diamond key is orange and has a diamond shape.
             The purple key is purple and has an arrow shape.
             
-            When I say "the [X] key" or "the [X] box", X is called the id of the key/box. 
+            Here is the accurate code data for all keys and boxes in the environment.
+
+            key_data = {
+                "id": ["red", "pink", "grey2", "cloud", "orange4", "green3", "blue", "yellow5", "heart", "white", "triangle", "diamond", "purple"],
+                "color": ["red", "pink", "grey", "grey", "orange", "green", "blue", "yellow", "green", "white", "yellow", "orange", "purple"],
+                "number": [1, 6, 2, None, 4, 3, None, 5, None, 7, None, None, None],
+                "shape": [None, None, None, "cloud", None, None, "star", None, "heart", None, "triangle", "diamond", "arrow"]
+            }
+
+            box_data = {
+                "id": ["red", "pink", "white", "purple", "blue"],
+                "color": ["red", "pink", "white", "purple", "blue"],
+                "shape": ["moon", "cloud", "diamond", "heart", "triangle"], 
+                "number": [1, 2, 4, 3, 5],
+                "position": [1, 2, 3, 4, 5],
+            }
+
+            The number field in Box represents the number of shapes on the box.
             '''
 
 hyp_prompt ='''A hypothesis is a valid Python program that can be executed to predict the outcome of a given key and box.
                The Python program should have the following signature:
 
-               def try_open(key: Key, box: Box) -> bool:
+               def predict(key, box) -> bool:
+                    # key is a Key object
+                    # box is a Box object
                     # fill in your code
 
                 The Key and Box objects are defined as follow. Note
@@ -58,7 +77,7 @@ hyp_prompt ='''A hypothesis is a valid Python program that can be executed to pr
                 The number field in Box represents the number of shapes on the box.'''
 
 generate_prompt = '''Now, it is your turn to generate a hypothesis.
-                     Your hypothesis should be a Python program that contains exactly the try_open function, including the provided signature.
+                     Your hypothesis should be a Python program that contains exactly the predict function, including the signature exactly as provided, no type hints for argument.
 
                      Your output should contain only the Python program, absolutely nothing else.
                      Your output should NOT contain the Key or Box classes.
@@ -72,7 +91,7 @@ refine_prompt = [
     ''',
 
     """Generate a new hypothesis.
-       Your hypothesis should be a Python program that contains exactly the try_open function, including the provided signature.
+       Your hypothesis should be a Python program that contains exactly the predict function, including the provided signature.
 
        Your output should contain only the Python program, absolutely nothing else.
        Your output should NOT contain the Key or Box classes.

@@ -5,7 +5,7 @@ from llm.code import execute_hypothesis_code
 
 from llm.llm import LLM
 
-import math, random, copy
+import math, random
 
 class Particle:
 
@@ -25,7 +25,11 @@ class Engine:
     def __init__(self, config: Dict, env: Environment, llm: LLM = None, logger = None):
         
         self.num_particles: int = config['num_particles']
-        self.smc: bool = config['smc']
+
+        # action selection mode: 
+        # bed = bayesian experimental design
+        # sample = probabilistic sampling
+        self.act_mode: bool = config['act_mode'] 
 
         # initialize theta distribution
         self.alpha0, self.beta0 = config['init_theta']
@@ -39,10 +43,14 @@ class Engine:
 
         self.particles = self._initialize_particles()
 
+        # for theta update
+        # new update mechanism (_compute_theta only requires fail_count and succ_count)
+        self.evidence = list()
         self.succ_count = defaultdict(lambda: 0)
         self.fail_count = defaultdict(lambda: 0)
-        self.evidence = list()
         
+        # for result viewing purposes
+        self.history = [] 
 
     def _initialize_particles(self) -> List[Particle]:
 
@@ -78,6 +86,16 @@ class Engine:
                 likelihood = likelihood * self._compute_likelihood(pred_match, outcome)
             return likelihood
         
+        def _accept_h(hypothesis: str) -> bool:
+            # check consistency with opened boxes
+            for (key_id, box_id) in self.env.success_pairs:
+                key, box = self.env.id_to_key[key_id], self.env.id_to_box[box_id]
+                if execute_hypothesis_code(hypothesis, key, box) is False:
+                    return False
+            
+            # check consistency with failure evidence
+            return True
+
         # find worst performing hypothesis
         worst_h_idx = list()
         worst_h_likelihood = float('inf')
@@ -90,7 +108,13 @@ class Engine:
         worst_h_idx = random.choice(worst_h_idx)
         worst_h = self.particles[worst_h_idx].hypothesis
 
-        new_h, new_name = self.llm.refine(self.evidence, worst_h)
+        # refine until one is accepted
+        while True:
+            new_h, new_name = self.llm.refine(self.evidence, worst_h)
+            if _accept_h(new_h):
+                break
+            worst_h = new_h
+
         self.particles[worst_h_idx] = Particle(name=new_name, hypothesis=new_h, weight=self.particles[worst_h_idx].weight)
 
     def _compute_ess(self) -> float:
@@ -138,30 +162,11 @@ class Engine:
         self.alpha = max(1e-9, self.alpha)
         self.beta = max(1e-9, self.beta)
 
-    def _update_theta(self, box: Box, outcome: bool):
-
-        if box.id in self.env.opened:
-            return
-        
-        if outcome is True:
-            self.alpha += 1.0
-            if box.id not in self.env.opened:
-                self.beta = max(1e-9, self.beta - self.fails_per_box[box.id])
-                self.env.opened.add(box.id)
-        else:
-            self.fails_per_box[box.id] += 1
-            self.beta += 1.0
             
     def _compute_likelihood(self, predict: bool, outcome: bool) -> float:
-        
-        self.skill = True
 
-        if self.skill:
-            # skill mode: use theta distribution
-            assert(self.alpha + self.beta > 0)  
-            prob_success = self.alpha / (self.alpha + self.beta)
-        else:
-            prob_success = 1.0
+        assert(self.alpha + self.beta > 0)  
+        prob_success = self.alpha / (self.alpha + self.beta)
 
         if predict and outcome:
             return prob_success
@@ -220,15 +225,38 @@ class Engine:
             self._resample()
             self._rejuvenate()
 
-    def _select_action(self):
+    def _select_action_by_sample(self):
 
-        actions = self.env.actions
+        # sample particle by weight
+        weights = [p.weight for p in self.particles]
+        if sum(weights) == 0:
+            particle = random.choice(self.particles)
+        else:
+            particle = random.choices(self.particles, weights=weights, k=1)[0]
+
+        opened = set([pair[1] for pair in self.env.success_pairs])
+        candidate_actions = list()
+        fallback_actions = list()
+        for (key, box) in self.env.actions:
+            if box.id not in opened:
+                if particle.evaluate(key, box):
+                    candidate_actions.append((key, box))
+                else:
+                    fallback_actions.append((key, box))
+        
+        if len(candidate_actions) > 0:
+            return random.choice(candidate_actions)
+        else:
+            return random.choice(fallback_actions)
+
+
+    def _select_action_by_bed(self):
         
         # determine action that maximizes information gain
         max_info_gain = float('-inf')
         best_actions = list()
 
-        for (key, box) in actions:
+        for (key, box) in self.env.actions:
             if key == 'inspect':
                 info_gain = self._compute_inspect_info_gain(box)
             else:
@@ -253,20 +281,23 @@ class Engine:
             
             self.logger.log(f"TRIAL {self.trial_count + 1}")
 
-            (key, box) = self._select_action()
+            if self.act_mode == 'bed':
+                (key, box) = self._select_action_by_bed()
+            elif self.act_mode == 'sample':
+                (key, box) = self._select_action_by_sample()
+
             outcome = self.env.test_action(key, box)
+
+            self.logger.log(f"Action chosen: ({key.id}, {box.id})")
+            self.logger.log(f"Outcome: {outcome}")
 
             self.evidence.append((key, box, outcome))
             if outcome is True:
                 self.succ_count[(key.id, box.id)] += 1
             else:
                 self.fail_count[(key.id, box.id)] += 1
-            
-            self.logger.log(f"Action chosen: ({key.id}, {box.id})")
-            self.logger.log(f"Outcome: {outcome}")
 
-            if self.skill:
-                self._compute_theta()
+            self._compute_theta()
 
             self._update_particle_weights(key, box, outcome)
 
@@ -275,4 +306,19 @@ class Engine:
             
             self.trial_count += 1
 
-        return "yes"
+            # for plotting at the end of trial
+            t = self.trial_count - 1
+            opened = len(self.env.success_pairs)
+            theta = self.alpha / (self.alpha + self.beta)
+            probs = {}
+            for p in self.particles:
+                probs[p.name] = probs.get(p.name, 0.0) + p.weight
+            self.history.append({
+                "t": t,
+                "opened": opened,
+                "theta": theta,
+                "probs": probs
+            })
+        print(self.evidence)
+        
+        return self.history

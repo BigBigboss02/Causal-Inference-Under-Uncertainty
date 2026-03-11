@@ -15,7 +15,7 @@ smc_config = {
     "num_particles": 5,
     "init_theta": (0.5, 0.5),
     "ess_threshold": 0.5,
-    'smc': True,
+    'act_mode': 'sample'
 }
 
 llm = LLM()
@@ -29,3 +29,8 @@ if __name__ == '__main__':
 
     smc_engine = Engine(smc_config, environment, llm, logger)
     history = smc_engine.run(max_trials=max_trials)
+
+    plotter2 = Plotter2(history)
+    plotter2.plot_boxes_opened_over_trials(show=True)
+    plotter2.plot_hypothesis_probs_over_trials(show=True)
+    plotter2.plot_theta_over_trials(show=True)

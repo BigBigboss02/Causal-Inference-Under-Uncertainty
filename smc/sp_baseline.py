@@ -1,7 +1,8 @@
+from sre_parse import SUCCESS
 from environment import Environment
 from llm.llm import LLM
-from llm.prompt import baseline_prompts
-from utils.code import check_valid_program, execute_hypothesis_code
+from llm.code import execute_hypothesis_code
+import random
 
 class SPBaseline:
 
@@ -14,34 +15,33 @@ class SPBaseline:
         self.hypothesis: str = None
         self.evidence = list()
 
-    def _generate_hyp(self):
-        
-        def _build_prompt():
-            
-            evidence_prompt = ""
-            for (box, key, outcome) in self.evidence:
-                if outcome is True:
-                    evidence_prompt += f"{key.id} successfully opens {box.id}\n"
-                else:
-                    evidence_prompt += f"{key.id} fails to open {box.id}\n"
-            return baseline_prompts['env'] + evidence_prompt + baseline_prompts['generate']
-        
-        gen_prompt = _build_prompt()
-        
-        # repeat until a valid program is generated
-        while True:
-            temp_h = self.llm.get_completion(baseline_prompts['system'], gen_prompt)
-            if check_valid_program(temp_h):
-                self.hypothesis = temp_h
-                break
-        
     def _select_action(self):
 
+        opened = set([pair[1] for pair in self.env.success_pairs])
+        candidate_actions = list()
+        fallback_actions = list()
+        for (key, box) in self.env.actions:
+            if box.id not in opened:
+                if execute_hypothesis_code(self.hypothesis, key, box) is True:
+                    candidate_actions.append((key, box))
+                else:
+                    fallback_actions.append((key, box))
         
+        if len(candidate_actions) > 0:
+            return random.choice(candidate_actions)
+        else:
+            return random.choice(fallback_actions)
 
-        key, box = 'dummy', 'dummy'
-        return (key, box)
-    
+    def _accept_h(self) -> bool:
+        # check consistency with opened boxes
+        for (key_id, box_id) in self.env.success_pairs:
+            key, box = self.env.id_to_key[key_id], self.env.id_to_box[box_id]
+            if execute_hypothesis_code(self.hypothesis, key, box) is False:
+                return False
+            
+        # check consistency with failure evidence
+        return True
+
     def run(self, max_trials: int) -> bool:
         
         self.trial_count = 0
@@ -50,7 +50,14 @@ class SPBaseline:
 
             self.logger.log(f"TRIAL {self.trial_count}")
 
-            self._generate_hyp()
+            if self.trial_count == 0:
+                self.hypothesis, h_name = self.llm.generate([])
+            else:
+                # refine hypothesis until work
+                while True:
+                    self.hypothesis, new_name = self.llm.refine(self.evidence, self.hypothesis)
+                    if self._accept_h():
+                        break
 
             self.logger.log(f"{self.hypothesis}")
 
@@ -61,5 +68,7 @@ class SPBaseline:
 
             self.logger.log(f"Action chosen: ({key.id}, {box.id})")
             self.logger.log(f"Outcome: {outcome}")
+            self.logger.log(f"Boxes opened: {self.env.success_pairs}")
 
             self.trial_count += 1
+        
