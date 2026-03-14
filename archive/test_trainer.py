@@ -1,4 +1,4 @@
-from trainer import BoxTaskTrainer, SkillOnlyParams
+from archive.trainer import BoxTaskTrainer, SkillOnlyParams
 
 D = [
     ("red",     "red",    1),
@@ -23,6 +23,7 @@ D = [
 
     ("red",     "pink",   0),
     ("grey2",   "red",    0),
+    ("red",     "red",    1),
     ("red",     "red",    1),
 ]
 

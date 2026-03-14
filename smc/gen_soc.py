@@ -8,9 +8,30 @@ class Generator:
     def __init__(self, config: Dict, env: Environment):
 
         self.env: Environment = env
-        self.omega = config['omega']
-        self.prop_random = config['prop_random']
         
+
+        # Training switch
+        self.train = config['train'] if 'train' in config else False
+        self.prop_random = config['prop_random']
+        if self.train:
+
+            self.prior_color = config["prior_color"]
+            self.prior_order = config["prior_order"]
+            self.prior_shape = config["prior_shape"]
+            self.prior_number = config["prior_number"]
+            self.prior_sim_color_total = config["prior_sim_color_total"]
+            # omega unused when training
+            self.omega = None
+
+        else:
+            self.omega = config['omega']
+            # moved your original hard coded priors here, and they will be overridden when training
+            self.prior_color = 5 * self.omega / 2
+            self.prior_order = 5
+            self.prior_shape = 2
+            self.prior_number = 1
+            # total mass across the 14 similar-color rules
+            self.prior_sim_color_total = 5 * self.omega / 2
         self.hypotheses: Dict[str, Dict] = dict()
         self.num_generated = 0
 
@@ -73,20 +94,23 @@ class Generator:
             self.hypotheses[f"similar_color_{i+1}"] = h
 
         # assign prior probability
-        prior_color = 5 * self.omega / 2
-        prior_order = 5
-        prior_shape = 2
-        prior_number = 1
-        prior_sim_color = 5 * self.omega / 2 / 14
+        # prior_color = 5 * self.omega / 2
+        # prior_order = 5
+        # prior_shape = 2
+        # prior_number = 1
+        # prior_sim_color = 5 * self.omega / 2 / 14
+        prior_color = self.prior_color
+        prior_order = self.prior_order
+        prior_shape = self.prior_shape
+        prior_number = self.prior_number
+        prior_sim_color = self.prior_sim_color_total / 14
 
         prior_sum = prior_color + prior_order + prior_shape + prior_number + prior_sim_color * 14
-
         prob_color = prior_color / prior_sum * (1 - self.prop_random)
         prob_order = prior_order / prior_sum * (1 - self.prop_random)
         prob_shape = prior_shape / prior_sum * (1 - self.prop_random)
         prob_number = prior_number / prior_sum * (1 - self.prop_random)
         prob_sim_color = prior_sim_color / prior_sum * (1 - self.prop_random)
-        
         self.distribution.append({ "name": "generator", "type": "generator", "prior": self.prop_random, "prob": self.prop_random })
         self.distribution.append({ "name": "color_match", "type": "color", "prior": prob_color, "prob": prob_color })
         self.distribution.append({ "name": "order_match", "type": "order", "prior": prob_order, "prob": prob_order })
