@@ -45,7 +45,9 @@ class Engine:
         self.succ_count = defaultdict(lambda: 0)
         self.fail_count = defaultdict(lambda: 0)
         self.evidence = list()
-        
+
+        # initiate training log likelihood, default False
+        self.train = bool(config.get("train", False))
         # for result viewing purposes
         self.history = [] 
 
@@ -300,3 +302,25 @@ class Engine:
             
 
         return self.history
+    # def step(self, key, box, outcome: bool, *, update_weights: bool = True):
+    #     """
+    #     One observation update, mirroring the internal update order in run().
+
+    #     Args:
+    #         key, box: objects
+    #         outcome: bool
+    #         update_weights: if False, only updates evidence/counters/theta but does not
+    #                     resample/rejuvenate or change particle weights.
+    #     """
+    #     self.evidence.append((key, box, outcome))
+    #     if outcome:
+    #         if self.generator is not None:
+    #             self.generator.prune_proposal_dist(key, box)
+    #         self.succ_count[(key.id, box.id)] += 1
+    #     else:
+    #         self.fail_count[(key.id, box.id)] += 1
+    #     if self.skill:
+    #         self._compute_theta()
+    #     if update_weights:
+    #         self._update_particle_weights(key, box, outcome)
+    #     self.trial_count += 1

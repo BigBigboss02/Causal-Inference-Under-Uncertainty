@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from typing import Dict, List, Any, Optional, Tuple
+from collections import Counter
 
 
 class Plotter2:
@@ -133,3 +134,119 @@ class Plotter2:
             title=theta_title, save_path=theta_save_path, show=show
         )
         return (fig_probs, ax_probs), (fig_theta, ax_theta)
+    
+class KidDataPlotter:
+    """
+    Plot kid real-data attempt behavior from JSON:
+    {
+        "D001": [
+            ["red", "red", 0, {...}],
+            ["red", "red", 1, {...}],
+            ...
+        ],
+        ...
+    }
+    """
+
+    def __init__(self, kid_data: dict):
+        self.kid_data = kid_data
+
+    def _count_opened_progress(self, trials, max_attempts=None):
+        """
+        Count cumulative number of successful openings over attempts.
+        A success is outcome == 1.
+        """
+        if max_attempts is not None:
+            trials = trials[:max_attempts]
+
+        opened = 0
+        y = []
+
+        for trial in trials:
+            outcome = int(trial[2])
+            if outcome == 1:
+                opened += 1
+            y.append(opened)
+
+        return y
+
+    def get_ids_with_min_attempts(self, min_attempts=9, strictly_more=True):
+        ids = []
+        for kid_id, trials in self.kid_data.items():
+            n = len(trials)
+            if strictly_more:
+                if n > min_attempts:
+                    ids.append(kid_id)
+            else:
+                if n >= min_attempts:
+                    ids.append(kid_id)
+        return sorted(ids)
+
+    def plot_first_n_attempts_for_selected_ids(
+        self,
+        selected_ids,
+        first_n=10,
+        show=True,
+    ):
+        """
+        For each selected child ID, plot cumulative opened boxes over first N attempts.
+        """
+        if not selected_ids:
+            raise ValueError("No selected IDs to plot.")
+
+        plt.figure(figsize=(10, 6))
+
+        for kid_id in selected_ids:
+            trials = self.kid_data[kid_id]
+            y = self._count_opened_progress(trials, max_attempts=first_n)
+            x = list(range(1, len(y) + 1))
+            plt.plot(x, y, marker="o", label=kid_id)
+
+        plt.xlabel("Attempt")
+        plt.ylabel("Cumulative opened boxes")
+        plt.title(f"Kid data: first {first_n} attempts")
+        plt.xticks(range(1, first_n + 1))
+        plt.grid(alpha=0.3)
+        plt.legend(fontsize=8, ncol=2)
+
+        if show:
+            plt.show()
+
+    def plot_boxes_opened_histogram(self, show=True):
+        """
+        Histogram of how many unique boxes each kid opened successfully.
+
+        x-axis: number of boxes opened
+        y-axis: number of kids
+        """
+        opened_counts = []
+
+        for kid_id, trials in self.kid_data.items():
+            opened_boxes = set()
+
+            for trial in trials:
+                box_id = trial[1]
+                outcome = int(trial[2])
+
+                if outcome == 1:
+                    opened_boxes.add(box_id)
+
+            opened_counts.append(len(opened_boxes))
+
+        freq = Counter(opened_counts)
+
+        x_vals = sorted(freq.keys())
+        y_vals = [freq[x] for x in x_vals]
+
+        plt.figure(figsize=(8, 5))
+        plt.bar(x_vals, y_vals, width=0.8)
+        plt.xlabel("Number of boxes opened")
+        plt.ylabel("Number of kids")
+        plt.title("Histogram of boxes opened across kids")
+        plt.xticks(x_vals)
+        plt.grid(axis="y", alpha=0.3)
+
+        if show:
+            plt.show()
+
+        return freq
