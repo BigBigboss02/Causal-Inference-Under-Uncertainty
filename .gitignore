@@ -1,4 +1,7 @@
 /thinking_outside_the_box-llms
 /documents
 /venv
+.env
+__pycache__
+.vscode
 /training_results

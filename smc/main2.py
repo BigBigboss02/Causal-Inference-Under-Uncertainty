@@ -1,8 +1,7 @@
-from smc_soc import Engine
+from smc_sp import Engine
 from environment import Environment
-from gen_soc import Generator
 from utils.plotter import Plotter2
-
+from llm.llm import LLM
 
 class Logger:
     def __init__(self, logging: bool = True):
@@ -12,31 +11,23 @@ class Logger:
         if self.logging:
             print(log_str)
 
-gen_config = {
-    "omega": 2.0,
-    "prop_random": 0.1,
-    "train": False,
-}
-
 smc_config = {
-    "num_particles": 30,
+    "num_particles": 5,
     "init_theta": (0.5, 0.5),
     "ess_threshold": 0.5,
-    'skill': True,
-    "mode": "soc",
-    "prior": "uniform",
-    "model": "gpt-4o", #or "deepseek-chat"
+    'act_mode': 'sample'
 }
+
+llm = LLM()
 
 max_trials = 70
 
 if __name__ == '__main__':
 
     environment = Environment(include_inspect=False)
-    generator = Generator(gen_config, environment)
     logger = Logger(logging=True)
 
-    smc_engine = Engine(smc_config, environment, generator, logger)
+    smc_engine = Engine(smc_config, environment, llm, logger)
     history = smc_engine.run(max_trials=max_trials)
 
     plotter2 = Plotter2(history)
