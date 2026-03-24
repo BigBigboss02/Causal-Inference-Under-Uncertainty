@@ -10,7 +10,7 @@ from openai import OpenAI
 load_dotenv()
 
 class LLM:
-    def __init__(self, model: str = 'gpt-4o'):
+    def __init__(self, model: str = 'qwen-plus'):
         
         self.h_idx = 0
         self.model = model
@@ -21,6 +21,11 @@ class LLM:
             self.client = OpenAI(
                 api_key=os.getenv('DEEPSEEK_API_KEY'),
                 base_url="https://api.deepseek.com"
+            )
+        elif 'qwen' in model:
+            self.client = OpenAI(
+                api_key=os.getenv('QWEN_API_KEY'),
+                base_url="https://dashscope.aliyuncs.com/compatible-mode/v1" #put "qwen-plus" in the calling function
             )
         else:
             #default to chat if unknown
