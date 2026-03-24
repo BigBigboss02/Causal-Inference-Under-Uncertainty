@@ -12,13 +12,16 @@ class Logger:
             print(log_str)
 
 smc_config = {
-    "num_particles": 5,
-    "init_theta": (0.5, 0.5),
+    "num_particles": 1,
+    "init_theta": (19, 1),
     "ess_threshold": 0.5,
     'act_mode': 'sample'
 }
 
-llm = LLM()
+llm_config = {
+    "model": "qwen-plus"
+}
+llm = LLM(model=llm_config["model"])
 
 max_trials = 70
 
