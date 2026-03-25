@@ -250,3 +250,51 @@ class KidDataPlotter:
             plt.show()
 
         return freq
+class SPBaselineHistogramPlotter:
+    def __init__(self, histogram: Dict[int, int] | Dict[str, int], num_runs: int, max_trials: int):
+        self.histogram = histogram
+        self.num_runs = num_runs
+        self.max_trials = max_trials
+
+    def plot_trials_histogram(
+        self,
+        title: str = "Trials to solve across runs",
+        subtitle: Optional[str] = None,
+        save_path: Optional[str] = None,
+        show: bool = True,
+        annotate: bool = True,
+    ) -> Tuple[plt.Figure, plt.Axes]:
+        x_vals = sorted(int(k) for k in self.histogram.keys())
+        y_vals = [self.histogram.get(x, self.histogram.get(str(x), 0)) for x in x_vals]
+
+        fig, ax = plt.subplots(figsize=(12, 7))
+        bars = ax.bar(x_vals, y_vals, width=0.9)
+
+        full_title = f"{title} ({self.num_runs} runs, max_trials={self.max_trials})"
+        if subtitle:
+            full_title = f"{full_title}\n{subtitle}"
+
+        ax.set_title(full_title)
+        ax.set_xlabel("Trials taken")
+        ax.set_ylabel("Number of runs")
+        ax.set_xticks(x_vals)
+        ax.grid(True, axis="y", linestyle="--", linewidth=0.5, alpha=0.5)
+
+        if annotate and len(y_vals) > 0:
+            y_offset = max(y_vals) * 0.005
+            for bar, y in zip(bars, y_vals):
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + y_offset,
+                    str(y),
+                    ha="center",
+                    va="bottom",
+                    fontsize=10,
+                )
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight")
+        if show:
+            plt.show()
+
+        return fig, ax
