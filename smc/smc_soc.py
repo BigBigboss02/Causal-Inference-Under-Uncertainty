@@ -66,6 +66,24 @@ class Engine:
             
         return particles
 
+    def _history_snapshot(self) -> Dict:
+        """
+        Particle-level and name-aggregated weights for logging/plotting.
+        ``weights_by_name[h]`` = sum of weights of all particles whose hypothesis name is ``h``.
+        ``particles_named`` = one entry per particle slot (order matches ``particle_weights``).
+        """
+        probs: Dict[str, float] = {}
+        for p in self.particles:
+            probs[p.name] = probs.get(p.name, 0.0) + p.weight
+        return {
+            "probs": probs,
+            "weights_by_name": dict(probs),
+            "particles_named": [
+                {"name": p.name, "weight": float(p.weight)} for p in self.particles
+            ],
+            "particle_weights": [float(p.weight) for p in self.particles],
+            "particle_names": [p.name for p in self.particles],
+        }
 
     def _resample(self):
         weights = [p.weight for p in self.particles]
@@ -164,6 +182,8 @@ class Engine:
         # prevent collapse
         self.alpha = max(1e-9, self.alpha)
         self.beta = max(1e-9, self.beta)
+
+        # 
             
     def _compute_likelihood(self, predict: bool, outcome: bool) -> float:
 
@@ -234,31 +254,103 @@ class Engine:
     def _select_action(self):
 
         actions = self.env.actions
-        
-        # determine action that maximizes information gain
+
+        opened = {box_id for _, box_id in self.env.success_pairs}
+
+        # if total entropy is under threshold, greedily follow MAP hypothesis
+        greedy_actions = list()
+        h_weights = defaultdict(lambda: 0.0)
+        for p in self.particles:
+            h_weights[p.name] += p.weight
+        if sum(h_weights.values()) > 0:
+            best_name, _ = max(h_weights.items(), key=lambda kv: kv[1])
+            
+            masses = [m for m in h_weights.values() if m > 0]
+            total_mass = sum(masses)
+            entropy = self._compute_entropy([float(m / total_mass) for m in masses])
+            if (
+                entropy <= 1e-2
+                and best_name in self.proposal.hypotheses
+            ):
+            
+                hyp = self.proposal.hypotheses[best_name]
+                greedy_candidates = []
+                for key in self.env.keys:
+                    box_id = hyp.get(key.id, None)
+                    if box_id is None:
+                        continue
+                    if box_id in opened:
+                        continue
+                    box = self.env.id_to_box[box_id]
+                    greedy_candidates.append((key, box))
+                if greedy_candidates:
+                    return random.choice(greedy_candidates)
+
+        # 2) Otherwise, determine action that maximizes information gain,
+        #    with exploitation fallback when info gain is flat.
         max_info_gain = float('-inf')
         best_actions = list()
 
+        candidate_actions = []
         for (key, box) in actions:
+            if key != 'inspect' and box.id in opened:
+                continue
+            candidate_actions.append((key, box))
+
+        for (key, box) in candidate_actions:
             if key == 'inspect':
                 info_gain = self._compute_inspect_info_gain(box)
             else:
-                if (key.id, box.id) in self.env.success_pairs: # box already opened with key
-                    continue
                 info_gain = self._compute_info_gain(key, box)
-
             if info_gain > max_info_gain:
                 max_info_gain = info_gain
                 best_actions = [(key, box)]
             elif info_gain == max_info_gain:
                 best_actions.append((key, box))
 
+        eps = 1e-9
+        if not best_actions:
+            best_actions = candidate_actions
+
+        # If all actions give essentially the same info gain (e.g. posterior
+        # nearly collapsed but not exactly 1.0), exploit by choosing the action
+        # most likely to open a new box under the current particle mixture.
+        if max_info_gain <= eps and candidate_actions:
+            best_open_prob = float('-inf')
+            exploit_actions = []
+            for (key, box) in candidate_actions:
+                if key == 'inspect':
+                    continue
+                open_prob = sum(p.weight for p in self.particles if p.evaluate(key, box))
+                if open_prob > best_open_prob:
+                    best_open_prob = open_prob
+                    exploit_actions = [(key, box)]
+                elif open_prob == best_open_prob:
+                    exploit_actions.append((key, box))
+            if exploit_actions:
+                return random.choice(exploit_actions)
+
         return random.choice(best_actions)
 
         
     def run(self, max_trials: int) -> bool:
         
+        # Reset trial counter and history for this run.
         self.trial_count = 0
+        self.history = []
+
+        # Log initial state at "trial" t = 0, before any action selection or weight update.
+        opened = len(self.env.success_pairs)
+        theta = self.alpha / (self.alpha + self.beta) if (self.alpha + self.beta) > 0 else 0.0
+        snap0 = self._history_snapshot()
+        self.history.append({
+            "t": 0,
+            "opened": opened,
+            "theta": theta,
+            "action": None,  # no action yet before first selection
+            **snap0,
+        })
+
         while not self.env.is_solved() and self.trial_count < max_trials:
             
             self.logger.log(f"TRIAL {self.trial_count + 1}")
@@ -287,17 +379,20 @@ class Engine:
             self.trial_count += 1
 
             # for plotting at the end of trial
-            t = self.trial_count - 1
+            t = self.trial_count
             opened = len(self.env.success_pairs)
             theta = self.alpha / (self.alpha + self.beta)
-            probs = {}
-            for p in self.particles:
-                probs[p.name] = probs.get(p.name, 0.0) + p.weight
+            snap = self._history_snapshot()
+            if key == "inspect":
+                action_pair = ("inspect", box.id)
+            else:
+                action_pair = (key.id, box.id)
             self.history.append({
                 "t": t,
                 "opened": opened,
                 "theta": theta,
-                "probs": probs
+                "action": action_pair,
+                **snap,
             })
             
 

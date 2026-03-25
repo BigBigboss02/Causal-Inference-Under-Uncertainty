@@ -92,6 +92,7 @@ class Environment:
         if (key.id, box.id) in key_box_mapping:
             if (key.id, box.id) not in self.success_pairs:
                 self.success_pairs.add((key.id, box.id))
+                self.opened.add(box.id)
             return True
         else:
             return False

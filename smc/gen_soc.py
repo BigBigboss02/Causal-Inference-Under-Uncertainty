@@ -13,6 +13,8 @@ class Generator:
         # Training switch
         self.train = config['train'] if 'train' in config else False
         self.prop_random = config['prop_random']
+        self.true_prior = config['true_prior']
+
         if self.train:
 
             self.prior_color = config["prior_color"]
@@ -20,10 +22,13 @@ class Generator:
             self.prior_shape = config["prior_shape"]
             self.prior_number = config["prior_number"]
             self.prior_sim_color_total = config["prior_sim_color_total"]
-            # omega unused when training
-            self.omega = None
-
         else:
+            # uniform distribution
+            self.prior_color = float(1 / 17)
+            self.prior_order = float(1 / 17)
+            self.prior_shape = float(1 / 17)
+            self.prior_sim_color_total = float(14 / 17)
+            """
             self.omega = config['omega']
             # moved your original hard coded priors here, and they will be overridden when training
             self.prior_color = 5 * self.omega / 2
@@ -32,6 +37,7 @@ class Generator:
             self.prior_number = 1
             # total mass across the 14 similar-color rules
             self.prior_sim_color_total = 5 * self.omega / 2
+            """
         self.hypotheses: Dict[str, Dict] = dict()
         self.num_generated = 0
 
@@ -94,28 +100,22 @@ class Generator:
             self.hypotheses[f"similar_color_{i+1}"] = h
 
         # assign prior probability
-        # prior_color = 5 * self.omega / 2
-        # prior_order = 5
-        # prior_shape = 2
-        # prior_number = 1
-        # prior_sim_color = 5 * self.omega / 2 / 14
         prior_color = self.prior_color
         prior_order = self.prior_order
         prior_shape = self.prior_shape
-        prior_number = self.prior_number
         prior_sim_color = self.prior_sim_color_total / 14
+        
+        prior_sum = prior_color + prior_order + prior_shape + prior_sim_color * 14
+        prob_color = prior_color / prior_sum * (1 - self.prop_random - self.true_prior)
+        prob_order = prior_order / prior_sum * (1 - self.prop_random - self.true_prior)
+        prob_shape = prior_shape / prior_sum * (1 - self.prop_random - self.true_prior)
+        prob_sim_color = prior_sim_color / prior_sum * (1 - self.prop_random - self.true_prior)
 
-        prior_sum = prior_color + prior_order + prior_shape + prior_number + prior_sim_color * 14
-        prob_color = prior_color / prior_sum * (1 - self.prop_random)
-        prob_order = prior_order / prior_sum * (1 - self.prop_random)
-        prob_shape = prior_shape / prior_sum * (1 - self.prop_random)
-        prob_number = prior_number / prior_sum * (1 - self.prop_random)
-        prob_sim_color = prior_sim_color / prior_sum * (1 - self.prop_random)
         self.distribution.append({ "name": "generator", "type": "generator", "prior": self.prop_random, "prob": self.prop_random })
         self.distribution.append({ "name": "color_match", "type": "color", "prior": prob_color, "prob": prob_color })
         self.distribution.append({ "name": "order_match", "type": "order", "prior": prob_order, "prob": prob_order })
         self.distribution.append({ "name": "shape_match", "type": "shape", "prior": prob_shape, "prob": prob_shape })
-        self.distribution.append({ "name": "number_match", "type": "number", "prior": prob_number, "prob": prob_number })
+        self.distribution.append({ "name": "number_match", "type": "number", "prior": self.true_prior, "prob": self.true_prior })
         for i, h in enumerate(sim_color):
             self.distribution.append({ "name": f"similar_color_{i+1}", "type": "sim_color", "prior": prob_sim_color, "prob": prob_sim_color })
 
@@ -185,38 +185,3 @@ class Generator:
         h_name = f'generator_{self.num_generated}'
         self.hypotheses[h_name] = hypothesis
         return hypothesis, h_name
-    
-    
-    """
-    NOT USED
-    """
-    def generate_non_duplicate(self, existing_h: List[Dict]) -> Tuple[Dict, str]:
-
-        # for opened boxes, key-box pairs are fixed in hypothesis
-        hypothesis = dict()
-        for key_id, box_id in self.env.success_pairs:
-            hypothesis[key_id] = box_id
-
-        unopened = [box for box in self.env.boxes if box.id not in hypothesis.values()]
-        unused_keys = [key for key in self.env.keys if key.id not in hypothesis.keys()]
-
-        if len(unopened) == 0:
-            return (None, None) if (hypothesis in existing_h) else (hypothesis, 'generator')
-        
-        # valid key assignments for unopened boxes that do not lead to duplicates
-        candidates = list()
-        for assigned_keys in permutations(unused_keys, len(unopened)):
-            for key, box in zip(assigned_keys, unopened):
-                hypothesis[key.id] = box.id
-            if hypothesis not in existing_h:
-                candidates.append(assigned_keys)
-        
-        if not candidates:
-            return None, None
-        
-        assigned_keys = random.choice(candidates)
-        for key, box in zip(assigned_keys, unopened):
-            hypothesis[key.id] = box.id
-
-        return hypothesis, 'generator'
-        
