@@ -42,18 +42,17 @@ class SPBaseline:
         # check consistency with failure evidence
         return True
 
-    def run(self, max_trials: int) -> bool:
-        
+
+    def run(self, max_trials: int) -> dict:
         self.trial_count = 0
+        self.history = []
 
         while not self.env.is_solved() and self.trial_count < max_trials:
-
             self.logger.log(f"TRIAL {self.trial_count}")
 
             if self.trial_count == 0:
                 self.hypothesis, h_name = self.llm.generate([])
             else:
-                # refine hypothesis until work
                 while True:
                     self.hypothesis, new_name = self.llm.refine(self.evidence, self.hypothesis)
                     if self._accept_h():
@@ -61,7 +60,7 @@ class SPBaseline:
 
             self.logger.log(f"{self.hypothesis}")
 
-            (key, box) = self._select_action()
+            key, box = self._select_action()
             outcome = self.env.test_action(key, box)
 
             self.evidence.append((key, box, outcome))
@@ -71,4 +70,19 @@ class SPBaseline:
             self.logger.log(f"Boxes opened: {self.env.success_pairs}")
 
             self.trial_count += 1
-        
+
+            self.history.append({
+                "t": self.trial_count,
+                "opened": len(self.env.success_pairs),
+                "hypothesis": self.hypothesis,
+                "action": [key.id, box.id],
+                "outcome": bool(outcome),
+            })
+
+        return {
+            "solved": self.env.is_solved(),
+            "trials": self.trial_count,
+            "opened": len(self.env.success_pairs),
+            "success_pairs": list(self.env.success_pairs),
+            "history": self.history,
+        }
