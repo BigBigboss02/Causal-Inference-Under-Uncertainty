@@ -78,7 +78,7 @@ class Logger:
 
 
 # =========================
-# Method 2 fitter
+# Method 2 EXPERIMENT: Trial Probability Estimation
 # =========================
 
 class TrialProbabilityFitter:

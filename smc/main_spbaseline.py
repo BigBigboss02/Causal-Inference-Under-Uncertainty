@@ -9,7 +9,7 @@ from utils.plotter import SPBaselineHistogramPlotter
 
 
 if __name__ == '__main__':
-    num_runs = 40
+    num_runs = 100
     max_trials = 70
     output_dir = r"training_results\LLM_results\qwen_plus"
     os.makedirs(output_dir, exist_ok=True)
@@ -21,6 +21,12 @@ if __name__ == '__main__':
     solved_trials = []
     all_results = []
     start_run_idx = 0
+
+    # LLM settings are recorded here for bookkeeping only.
+    # Actual control should be implemented inside llm/llm.py
+    model_name = "qwen-plus"
+    temperature = 0.7
+    max_tokens = 2000
 
     # Resume from existing checkpoint if available
     if os.path.exists(json_path):
@@ -66,7 +72,14 @@ if __name__ == '__main__':
         except TypeError:
             logger = Logger()
 
-        model = SPBaseline(env, logger)
+
+        model = SPBaseline(
+            env,
+            logger,
+            model_name=model_name,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
         result = model.run(max_trials=max_trials)
 
         run_record = {
@@ -84,7 +97,10 @@ if __name__ == '__main__':
         # Save checkpoint after every completed run
         hist = Counter(solved_trials)
         partial_summary = {
-            "model": "SPBaseline",
+            "model": "SPBaseline_original",
+            "llm_model": model_name,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
             "num_runs": num_runs,
             "max_trials": max_trials,
             "num_completed_runs": len(all_results),
@@ -110,7 +126,10 @@ if __name__ == '__main__':
     hist = Counter(solved_trials)
 
     summary = {
-        "model": "SPBaseline",
+        "model": "SPBaseline_original",
+        "llm_model": model_name,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
         "num_runs": num_runs,
         "max_trials": max_trials,
         "num_completed_runs": len(all_results),

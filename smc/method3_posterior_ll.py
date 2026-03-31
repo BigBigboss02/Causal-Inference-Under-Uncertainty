@@ -1,4 +1,17 @@
 """
+
+
+
+
+
+
+UNFINISHED CODE - DO NOT RUN
+
+
+
+
+
+
 ===========================================
 METHOD 2: POSTERIOR-OPENING-PROBABILITY FITTING
 ===========================================
@@ -63,29 +76,29 @@ smc_config = {
 
 fit_config = {
     "data_path": r"C:\Users\MSN\Documents\Python\smc-s\data\Dolly_KeyEviModel_7.3.24.json",
-    "save_dir": r"training_results\posterior_opening_method",
+    "save_dir": r"training_results\log_likelyhood_method\posterior_opening_method",
     "show_progress": True,
     "eps": 1e-12,
 }
 
 
-# THETA_LIST = [
-#     (9, 1),
-#     (19, 1),
-#     (8, 1),
-#     (7, 1),
-#     (6, 1),
-# ]
-
-# GENERATOR_PRIOR_LIST = [0.01, 0.1, 0.3, 0.5, 0.8]
-# TRUE_RULE_PRIOR_LIST = [0.01, 0.1, 0.2]
-
 THETA_LIST = [
     (9, 1),
+    (19, 1),
+    (8, 1),
+    (7, 1),
+    (6, 1),
 ]
 
-GENERATOR_PRIOR_LIST = [0.01]
-TRUE_RULE_PRIOR_LIST = [0.01]
+GENERATOR_PRIOR_LIST = [0.01, 0.1, 0.3, 0.5, 0.8]
+TRUE_RULE_PRIOR_LIST = [0.01, 0.1, 0.2]
+
+# THETA_LIST = [
+#     (9, 1),
+# ]
+
+# GENERATOR_PRIOR_LIST = [0.01]
+# TRUE_RULE_PRIOR_LIST = [0.01]
 
 
 # =========================
@@ -317,20 +330,37 @@ class ExperimentRunner:
 
             fitter = PosteriorOpeningFitter(gcfg, scfg, fit_config)
             fit_result = fitter.fit()
-
             result = {
                 "theta": theta,
                 "gen_prior": gen_prior,
                 "rule_prior": rule_prior,
                 "loglik": fit_result["total_loglik"],
-                #"child_results": fit_result["child_results"],
+                "gen_config": gcfg,
+                "smc_config": scfg,
             }
 
             print(result)
             self.results.append(result)
 
         return self.results
+    def save_results(self, results):
+        save_dir = fit_config["save_dir"]
+        os.makedirs(save_dir, exist_ok=True)
 
+        # ---- save all results ----
+        all_path = os.path.join(save_dir, "all_results.json")
+        with open(all_path, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2)
+
+        # ---- find best result ----
+        best = max(results, key=lambda x: x["loglik"])
+
+        best_path = os.path.join(save_dir, "best_result.json")
+        with open(best_path, "w", encoding="utf-8") as f:
+            json.dump(best, f, indent=2)
+
+        print(f"\nSaved all results to: {all_path}")
+        print(f"Saved best result to: {best_path}")
 
 # =========================
 # MAIN
@@ -339,6 +369,8 @@ class ExperimentRunner:
 if __name__ == "__main__":
     runner = ExperimentRunner()
     results = runner.run_all()
+
+    runner.save_results(results)
 
     print("\n=== FINAL RESULTS ===")
     for r in results:
