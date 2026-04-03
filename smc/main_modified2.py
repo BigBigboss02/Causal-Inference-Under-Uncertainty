@@ -13,7 +13,7 @@ from gen_soc import Generator
 # ============================================================
 
 # Output folder
-SAVE_ROOT = r"training_results\CCN_plots_data\smc_s\30thMar"
+SAVE_ROOT = r"training_results\CCN_plots_data\smc_s\31stMar"
 
 # Main experiment controls
 NUM_RUNS = 1000
@@ -27,7 +27,7 @@ SIM_PROP_RANDOM = 0.6
 
 # run single or multiple settings:
 # SIM_TRUE_RULE_PRIOR = 0.011
-SIM_TRUE_RULE_PRIORS = [round(x / 1000, 3) for x in range(5, 26)]  # 0.005 to 0.025
+SIM_TRUE_RULE_PRIORS = [round(x / 1000, 3) for x in range(40, 59, 2)]  # 0.040 to 0.058
 REPEATS_PER_SETTING = 20
 
 
