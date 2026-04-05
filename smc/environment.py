@@ -1,5 +1,4 @@
 from typing import Optional, List, Tuple
-import numpy as np
 import random
 
 """
@@ -41,8 +40,9 @@ class Box:
         self.shape = shape
 
 class Environment:
-    def __init__(self, include_inspect: bool = False):
+    def __init__(self, opening_prob: float = 1.0, include_inspect: bool = False):
 
+        self.opening_prob = opening_prob
         self.include_inspect = include_inspect
         self.keys, self.boxes = self._create_keys_and_boxes()
         self.actions = self._get_all_possible_actions()
@@ -89,7 +89,7 @@ class Environment:
         return random.choice(self.actions)
 
     def test_action(self, key: Key, box: Box) -> bool:
-        if (key.id, box.id) in key_box_mapping:
+        if (key.id, box.id) in key_box_mapping and random.random() < self.opening_prob:
             if (key.id, box.id) not in self.success_pairs:
                 self.success_pairs.add((key.id, box.id))
                 self.opened.add(box.id)

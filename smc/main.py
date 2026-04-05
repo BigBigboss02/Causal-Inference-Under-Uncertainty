@@ -1,7 +1,7 @@
 from smc_soc import Engine
 from environment import Environment
 from gen_soc import Generator
-from utils.plotter import Plotter2
+from utils.plotter2 import Plotter2
 
 
 class Logger:
@@ -40,14 +40,14 @@ max_trials = 70
 
 
 if __name__ == '__main__':
-    num_runs = 1000
+    num_runs = 100
     trial_counts = []
     target_history = None
     max_n_steps = -1
     logger = Logger(logging=False)
 
     for _ in range(num_runs):
-        environment = Environment(include_inspect=False)
+        environment = Environment(opening_prob=0.9, include_inspect=False)
         generator = Generator(gen_config, environment)
         smc_engine = Engine(smc_config, environment, generator, logger)
         history = smc_engine.run(max_trials=max_trials)
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         show=True,
     )
 
-    if target_history is not None:
+    if False:# target_history is not None:
         n_steps = len(target_history)
         plotter = Plotter2(target_history)
         plotter.plot_weights_by_name_over_trials(
