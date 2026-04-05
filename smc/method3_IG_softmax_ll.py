@@ -69,28 +69,30 @@ smc_config = {
 
 fit_config = {
     "data_path": r"C:\Users\MSN\Documents\Python\smc-s\data\Dolly_KeyEviModel_7.3.24.json",
-    "save_dir": r"training_results\ig_softmax_method",
+    "save_dir": r"training_results\log_likelyhood_method\Information_gain",
     "show_progress": True,
 }
 
 
-# THETA_LIST = [
-#     (9, 1),
-#     (19, 1),
-#     (8, 1),
-#     (7, 1),
-#     (6, 1),
-# ]
-
-# GENERATOR_PRIOR_LIST = [0.01, 0.1, 0.3, 0.5, 0.8]
-# TRUE_RULE_PRIOR_LIST = [0.01, 0.1, 0.2]
-
 THETA_LIST = [
     (9, 1),
+    (19, 1),
+    (8, 1),
+    (7, 1),
+    (6, 1),
 ]
 
-GENERATOR_PRIOR_LIST = [0.01]
-TRUE_RULE_PRIOR_LIST = [0.01]
+GENERATOR_PRIOR_LIST = [0.01, 0.1, 0.3, 0.5, 0.8]
+TRUE_RULE_PRIOR_LIST = [0.01, 0.1, 0.2]
+
+# THETA_LIST = [
+#     (9, 1),
+# ]
+
+# GENERATOR_PRIOR_LIST = [0.01]
+# TRUE_RULE_PRIOR_LIST = [0.01]
+
+
 # =========================
 # Logger
 # =========================
@@ -226,13 +228,18 @@ class ExperimentRunner:
         self.results = []
 
     @staticmethod
-    def assign_rule_priors(gcfg, prior_order):
-        other = (1 - prior_order) / 4
+    def assign_rule_priors(gcfg, prior_number):
+        other = (1 - prior_number) / 4
+
         gcfg["prior_color"] = other
-        gcfg["prior_order"] = prior_order
+        gcfg["prior_order"] = other
         gcfg["prior_shape"] = other
-        gcfg["prior_number"] = other
+        gcfg["prior_number"] = prior_number
         gcfg["prior_sim_color_total"] = other
+
+        # keep this for compatibility with Generator
+        gcfg["true_prior"] = prior_number
+
         return gcfg
 
     def run_all(self):
@@ -255,20 +262,39 @@ class ExperimentRunner:
             gcfg = self.assign_rule_priors(gcfg, rule_prior)
 
             fitter = IGSoftmaxFitter(gcfg, scfg, fit_config)
-
             ll = fitter.fit()
 
             result = {
                 "theta": theta,
                 "gen_prior": gen_prior,
-                "rule_prior": rule_prior,
-                "loglik": ll
+                "true_prior": rule_prior,
+                "loglik": ll,
+                "gen_config": copy.deepcopy(gcfg),
+                "smc_config": copy.deepcopy(scfg),
             }
 
             print(result)
             self.results.append(result)
 
         return self.results
+
+    def save_results(self, results, filepath=None):
+        save_dir = filepath if filepath is not None else fit_config["save_dir"]
+        os.makedirs(save_dir, exist_ok=True)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        all_results_path = os.path.join(save_dir, f"all_results_{timestamp}.json")
+        with open(all_results_path, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2)
+
+        best_result = max(results, key=lambda x: x["loglik"])
+        best_result_path = os.path.join(save_dir, f"best_result_{timestamp}.json")
+        with open(best_result_path, "w", encoding="utf-8") as f:
+            json.dump(best_result, f, indent=2)
+
+        print(f"\nSaved all results to: {all_results_path}")
+        print(f"Saved best result to: {best_result_path}")
 
 
 # =========================
@@ -279,6 +305,8 @@ if __name__ == "__main__":
 
     runner = ExperimentRunner()
     results = runner.run_all()
+
+    runner.save_results(results, filepath=fit_config["save_dir"])
 
     print("\n=== FINAL RESULTS ===")
     for r in results:

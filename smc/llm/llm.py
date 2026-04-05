@@ -10,10 +10,16 @@ from openai import OpenAI
 load_dotenv()
 
 class LLM:
-    def __init__(self, model: str = 'qwen-plus'):
-        
+    def __init__(
+        self,
+        model: str = "qwen-plus",
+        temperature: float = 0.7,
+        max_tokens: int = 200,
+    ):
         self.h_idx = 0
         self.model = model
+        self.temperature = temperature
+        self.max_tokens = max_tokens
         
         if 'gpt' in model:
             self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
@@ -47,10 +53,11 @@ class LLM:
             messages=[
                 {"role": "system", "content": sys_prompt},
                 {"role": "user", "content": user_prompt}
-            ]
+            ],
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
         )
         return self._clean_response(response.choices[0].message.content)
-
     def generate(self, evidence: List) -> str:
         
         if len(evidence) == 0:

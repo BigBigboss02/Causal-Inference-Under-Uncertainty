@@ -6,11 +6,22 @@ import random
 
 class SPBaseline:
 
-    def __init__(self, env: Environment, logger):
-
+    def __init__(
+        self,
+        env,
+        logger,
+        model_name="qwen-plus",
+        temperature=0.2,
+        max_tokens=200,
+    ):
         self.env = env
-        self.llm = LLM()
         self.logger = logger
+
+        self.llm = LLM(
+            model=model_name,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
 
         self.hypothesis: str = None
         self.evidence = list()
