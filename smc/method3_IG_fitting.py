@@ -16,41 +16,16 @@ trace_json_name = "trial_major_particles_and_ig.json"
 # output filename to save inside each hyperparameter folder
 output_json_name = "output_loglik.json"
 
-# softmax temperature
+# kept for compatibility, no longer used in likelihood assignment
 temperature = 1.0
 
-# safeguard if some action is missing from the action set
+# probability assigned to every non-chosen action
 missing_action_prob = 0.001
 
 
 def load_json(path: str) -> Dict[str, Any]:
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
-
-
-def stable_softmax(score_dict: Dict[str, float], temperature: float = 1.0) -> Dict[str, float]:
-    """
-    Convert action->IG dict into action->probability dict.
-    P(a) = exp(IG(a)/T) / sum_b exp(IG(b)/T)
-    """
-    if not score_dict:
-        return {}
-
-    if temperature <= 0:
-        raise ValueError("temperature must be > 0")
-
-    actions = list(score_dict.keys())
-    vals = [score_dict[a] / temperature for a in actions]
-
-    m = max(vals)
-    exps = [math.exp(v - m) for v in vals]
-    z = sum(exps)
-
-    if z <= 0:
-        uniform_p = 1.0 / len(actions)
-        return {a: uniform_p for a in actions}
-
-    return {a: e / z for a, e in zip(actions, exps)}
 
 
 def extract_kid_action(kid_trial_entry: List[Any]) -> str:
@@ -104,7 +79,9 @@ def compute_ll(trace_data: Dict[str, Any],
     For each run r and trial t:
       LL_run_trial(r,t) = sum_over_kids_at_trial_t log P_r,t(kid_action)
 
-    where P_r,t(.) is the softmax over all_action_ig at that run/trial.
+    where P_r,t(.) is defined as:
+      - chosen_action gets probability 1 - eps * (N - 1)
+      - every other action gets probability eps
 
     Then:
       LL_run(r) = sum_t LL_run_trial(r,t)
@@ -125,6 +102,7 @@ def compute_ll(trace_data: Dict[str, Any],
             "temperature": temperature,
             "missing_action_prob": missing_action_prob,
             "trace_meta": trace_data.get("meta", {}),
+            "action_model": "chosen_action_with_fixed_noise",
         },
         "trial_ll": {},
         "run_ll": {},
@@ -150,14 +128,34 @@ def compute_ll(trace_data: Dict[str, Any],
 
             run_info = runs_dict[run_name]
             all_action_ig = run_info.get("all_action_ig", {})
-            softmax_dist = stable_softmax(all_action_ig, temperature=temperature)
+            chosen_action = run_info.get("chosen_action")
 
             trial_ll_sum = 0.0
             num_kids_used = 0
             kid_details = {}
 
+            num_actions = len(all_action_ig)
+
+            if num_actions <= 0:
+                action_dist = {}
+            elif chosen_action is None or chosen_action not in all_action_ig:
+                uniform_p = 1.0 / num_actions
+                action_dist = {a: uniform_p for a in all_action_ig.keys()}
+            else:
+                other_action_prob = missing_action_prob
+                chosen_action_prob = 1.0 - other_action_prob * (num_actions - 1)
+
+                if chosen_action_prob <= 0:
+                    raise ValueError(
+                        f"missing_action_prob={missing_action_prob} is too large for "
+                        f"{num_actions} actions; chosen_action_prob becomes {chosen_action_prob}"
+                    )
+
+                action_dist = {a: other_action_prob for a in all_action_ig.keys()}
+                action_dist[chosen_action] = chosen_action_prob
+
             for kid_id, kid_action in kids_at_trial.items():
-                prob = softmax_dist.get(kid_action, missing_action_prob)
+                prob = action_dist.get(kid_action, missing_action_prob)
                 prob = max(prob, missing_action_prob)
                 log_prob = math.log(prob)
                 kid_action_ig = all_action_ig.get(kid_action, None)
@@ -165,7 +163,8 @@ def compute_ll(trace_data: Dict[str, Any],
                 kid_details[kid_id] = {
                     "action": kid_action,
                     "action_ig": kid_action_ig,
-                    "softmax_prob": prob,
+                    "model_chosen_action": chosen_action,
+                    "assigned_prob": prob,
                     "log_prob": log_prob,
                 }
 
