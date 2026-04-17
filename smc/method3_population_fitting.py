@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 MAX_TRIALS = 70
 EPS = 1e-4
 
-SWEEP_ROOT = Path(r"training_results\smc_trace_sweeps\small_true_prior")
+SWEEP_ROOT = Path(r"training_results\smc_trace_sweeps_redo\Full")
 KID_JSON_PATH = Path(r"data\Dolly_KeyEviModel_7.3.24.json")
 
 
