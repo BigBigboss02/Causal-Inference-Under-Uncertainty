@@ -23,7 +23,7 @@ llm_config = {
 }
 llm = LLM(model=llm_config["model"])
 
-max_trials = 70
+max_trials = 10
 
 if __name__ == '__main__':
 

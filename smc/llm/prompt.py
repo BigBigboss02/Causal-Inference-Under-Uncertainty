@@ -2,13 +2,13 @@
 sys_prompt ='''You are an intelligent agent playing a game. 
                Your task is to open 5 boxes using 13 keys in fewest attempts. 
                You do not need special skills to play this game. This game can be played by an 8-12 year old child.'''
-
+            #  "I'm going to show you a right way to unlock the doors. To open the doors, you have to use a key that matches the color of the box. So, to open this red box, I'm going to use this red key. Great, now you can open all the doors!”
 env_prompt ='''
             For each box there is a key that opens it, so the goal of the game is to find the right key for each box. 
             You have a demonstration video from a teacher telling you how to open all boxes. In the video, the teacher says:
             "I'm going to show you the right way to unlock the doors. To open the doors, you have to use a key that matches the color of the box. So, to open this red box, I'm going to use this red key. Great, now you can open all the doors!”
 
-            Here are the boxes, lined up in this order:
+            
             The red box has 1 moon shape. 
             The pink box has 2 cloud shapes. Each cloud is numbered from 1 to 2.
             The white box has 4 diamond shapes. Each diamond is numbered from 1 to 4.

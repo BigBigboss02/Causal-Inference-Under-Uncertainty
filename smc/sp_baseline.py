@@ -1,6 +1,7 @@
 from sre_parse import SUCCESS
 from environment import Environment
-from llm.llm import LLM
+#from llm.llm import LLM
+from llm.llm_vs2 import LLM
 from llm.code import execute_hypothesis_code
 import random
 

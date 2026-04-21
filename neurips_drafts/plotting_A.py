@@ -11,7 +11,7 @@ MODEL_PATHS = {
     "SoC-L":    r"neurips_drafts\data\theta_90_1__gen_0p01__trueprior_0p02__particles_30__runs_100__trials_70\trial_major_particles_and_ig.json",
     "SoC-Rel":  r"neurips_drafts\data\theta_1_1__gen_0p01__trueprior_0p02__particles_30__runs_100__trials_70\trial_major_particles_and_ig.json",
     "SoC-Gen":  r"neurips_drafts\data\theta_90_1__gen_0p85__trueprior_0p02__particles_30__runs_100__trials_70\trial_major_particles_and_ig.json",
-    "SoC-Full": r"neurips_drafts\data\theta_2_1__gen_0p4__trueprior_0p02__particles_30__runs_100__trials_70\trial_major_particles_and_ig.json",
+    "SoC-Full": r"training_results\\smc_trace_sweeps_redo\\Full\\theta_1_1__gen_0p6__trueprior_0p09__particles_30__runs_100__trials_70\trial_major_particles_and_ig.json",
 }
 
 # =========================
