@@ -19,11 +19,11 @@ smc_config = {
 }
 
 llm_config = {
-    "model": "qwen-plus"
+    "model": "qwen-plus" #Qwen3.5-Plus
 }
 llm = LLM(model=llm_config["model"])
 
-max_trials = 70
+max_trials = 10
 
 if __name__ == '__main__':
 

@@ -49,21 +49,66 @@ smc_config = {
 
 max_trials = 70
 num_runs = 100
-base_save_dir = r"training_results\smc_trace_sweeps\small_true_prior"
+base_save_dir = r"training_results\smc_trace_sweeps_redo\SoC-Lesioned"
 
 # =========================================================
 # Hyperparameter lists for sweep
 # =========================================================
-TRUE_PRIOR_LIST = [0.01, 0.02,0.03,0.04,0.05 ,0.06,0.07,0.08,0.09]
-PROP_RANDOM_LIST = [0.05, 0.2, 0.4, 0.6, 0.8]
-INIT_THETA_LIST = [
-    (1, 1),
-    (2, 1),
-    (6, 1),
-    (9, 1),
-    (19, 1),
-]
+# TRUE_PRIOR_LIST = [0.01, 0.02,0.03,0.04,0.05 ,0.06,0.07,0.08,0.09]
+# PROP_RANDOM_LIST = [0.05, 0.2, 0.4, 0.6, 0.8]
+# INIT_THETA_LIST = [
+#     (1, 1),
+#     (2, 1),
+#     (6, 1),
+#     (9, 1),
+#     (19, 1),
+# ]
+# #no gen setup
+# TRUE_PRIOR_LIST = [0.02]
+# PROP_RANDOM_LIST = [0.01]
+# part1 = [(1, b) for b in range(90, 9, -10)]
+# part2 = [(1, b) for b in range(9, 0, -1)]
+# part3 = [(a, 1) for a in range(2,10,1)]
+# part4 = [(a, 1) for a in range(10, 91, 10)]
+# INIT_THETA_LIST = part1 + part2 + part3 + part4
+# print(INIT_THETA_LIST)
 
+# #no skill setup
+TRUE_PRIOR_LIST = [0.02]
+PROP_RANDOM_LIST = [0.01]
+INIT_THETA_LIST = [
+    (99, 1),
+]
+# #fully leisioned setup
+# TRUE_PRIOR_LIST = [0.02]
+# PROP_RANDOM_LIST = [0.01]
+# # INIT_THETA_LIST = [(90, 1)]
+# TRUE_PRIOR_LIST = [0.02]
+# PROP_RANDOM_LIST = [i / 100 for i in range(0, 100,5)]
+# INIT_THETA_LIST = [
+#     (1, 2),
+#     (1, 1),
+#     (2, 1),
+#     (3, 1),
+#     (4, 1),
+#     (5, 1),
+# ]
+
+# TRUE_PRIOR_LIST = [0.01, 0.02,0.03,0.04,0.05 ,0.06,0.07,0.08,0.09]
+# PROP_RANDOM_LIST = [0.1, 0.2, 0.3,0.4, 0.5,0.6, 0.7,0.8,0.9]
+# INIT_THETA_LIST = [
+#     (1, 2),
+#     (1, 3),
+#     (1, 1),
+#     (2, 1),
+#     (3, 1),
+#     (4, 1),
+#     (5, 1),
+#     (6, 1),
+#     (9, 1),
+#     (15,1),
+#     (19, 1),
+# ]
 
 def observe_child_trial_manual(smc, key, box, outcome):
     """
