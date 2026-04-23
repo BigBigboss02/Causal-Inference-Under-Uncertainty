@@ -19,7 +19,7 @@ smc_config = {
 }
 
 llm_config = {
-    "model": "qwen-plus"
+    "model": "qwen-plus" #Qwen3.5-Plus
 }
 llm = LLM(model=llm_config["model"])
 

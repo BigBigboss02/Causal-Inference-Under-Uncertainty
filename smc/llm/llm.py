@@ -23,6 +23,7 @@ class LLM:
         
         if 'gpt' in model:
             self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+            # The deepseek-chat and deepseek-reasoner correspond to the model version DeepSeek-V3.2 (128K context limit), which differs from the APP/WEB version. deepseek-chat is the non-thinking mode of DeepSeek-V3.2 and deepseek-reasoner is the thinking mode of DeepSeek-V3.2.
         elif 'deepseek' in model:
             self.client = OpenAI(
                 api_key=os.getenv('DEEPSEEK_API_KEY'),
