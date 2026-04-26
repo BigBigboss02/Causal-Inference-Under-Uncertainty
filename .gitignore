@@ -5,3 +5,6 @@
 __pycache__
 .vscode
 /training_results
+/neurips_drafts/data
+/neurips_drafts/docs
+/data
