@@ -87,8 +87,10 @@ refine_prompt = [
     '''Now, your task is to improve and refine an existing hypothesis that performs poorly on existing evidence.
        This is the hypothesis:''',
 
-    '''Here are the evidence from previous attempts. Remember that the keys and boxes are physical objects, and for some probability the correct key might fail to open the correct box due to a mechanical failure.
+    '''Here are the evidence from previous attempts. Remember that the keys and boxes are physical objects, 
+        and for some probability the correct key might fail to open the correct box due to a mechanical failure.
     ''',
+    # evidence added here
 
     """Generate a new hypothesis.
        Your hypothesis should be a Python program that contains exactly the predict function, including the provided signature.

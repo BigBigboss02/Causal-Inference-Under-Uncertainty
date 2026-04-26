@@ -16,7 +16,7 @@ box_data = {
     "id": ["red", "pink", "white", "purple", "blue"],
     "color": ["red", "pink", "white", "purple", "blue"],
     "shape": ["moon", "cloud", "diamond", "heart", "triangle"], 
-    "count": [1, 2, 4, 3, 5],
+    "count": [{1}, {1,2}, {1,2,3,4}, {1,2,3}, {1,2,3,4,5}],
     "position": [1, 2, 3, 4, 5],
 }
 
@@ -33,10 +33,10 @@ class Key:
         self.shape = shape
 
 class Box:
-    def __init__(self, id: str, color: str, number: int, shape: str, position: int):
+    def __init__(self, id: str, color: str, shape: str, position: int):
         self.id = id
         self.color = color
-        self.number = number
+        self.number = 
         self.shape = shape
         self.position = position
 

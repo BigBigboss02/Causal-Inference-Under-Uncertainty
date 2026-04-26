@@ -12,7 +12,7 @@ load_dotenv()
 class LLM:
     def __init__(
         self,
-        model: str = "qwen-plus",
+        model: str = "gpt-5.2",
         temperature: float = 0.7,
         max_tokens: int = 200,
     ):
@@ -47,6 +47,20 @@ class LLM:
             return code_match.group(1).strip()
         return text.strip()
 
+    def get_openai_completion(self, sys_prompt: str, user_prompt: str, k: int = 1):
+
+        response = self.client.responses.create(
+            model=self.model,
+            input=[
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            reasoning={"effort": "low"},
+        )
+        print("OUTPUT :DDDD")
+        print(response.output_text)
+        return self._clean_response(response.output_text)
+
     def get_completion(self, sys_prompt: str, user_prompt: str, k: int = 1):
         response = self.client.chat.completions.create(
             model=self.model,
@@ -54,8 +68,9 @@ class LLM:
                 {"role": "system", "content": sys_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
+            reasoning_effort="low",
+            #temperature=self.temperature,
+            #max_tokens=self.max_tokens,
         )
         return self._clean_response(response.choices[0].message.content)
     def generate(self, evidence: List) -> str:
