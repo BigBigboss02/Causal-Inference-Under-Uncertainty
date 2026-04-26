@@ -12,7 +12,7 @@ load_dotenv()
 class LLM:
     def __init__(
         self,
-        model: str = "qwen-plus",
+        model: str = "qwen3.6-plus", #or "deepseek-chat"
         temperature: float = 0.7,
         max_tokens: int = 200,
     ):
