@@ -23,7 +23,7 @@ def check_valid_program(code: str) -> bool:
 
 
 def execute_hypothesis_code(code: str, key: Key, box: Box) -> bool:
-
+    # Called once per (key, box) when scoring actions; avoid printing here (very noisy).
     # assume functional code
     namespace = {}
     exec(code, namespace)

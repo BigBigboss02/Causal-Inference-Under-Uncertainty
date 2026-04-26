@@ -5,7 +5,7 @@ import re
 from typing import Optional
 
 from environment import Environment, key_box_mapping
-from sp_baseline import SPBaseline
+from smc.sp_baseline_backup import SPBaseline
 from utils.plot_hist_empirical_error import plot_empirical_success_histogram
 
 HISTORY_STEM = "sp_baseline_sto_history"

@@ -1,0 +1,824 @@
+{
+  "meta": {
+    "run_number": 20,
+    "model_name": "gpt-5.2",
+    "max_trials": 70
+  },
+  "solved": true,
+  "trials": 23,
+  "opened": 5,
+  "success_pairs": [
+    [
+      "yellow5",
+      "blue"
+    ],
+    [
+      "green3",
+      "purple"
+    ],
+    [
+      "red",
+      "red"
+    ],
+    [
+      "orange4",
+      "white"
+    ],
+    [
+      "grey2",
+      "pink"
+    ]
+  ],
+  "history": [
+    {
+      "t": 1,
+      "opened": 0,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Teacher's rule: the correct key matches the color of the box.\n    return key.color == box.color",
+      "action": [
+        "white",
+        "white"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Teacher's rule: the correct key matches the color of the box.\n    return key.color == box.color",
+      "evidence_lines": [
+        "Open box white with key white: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 2,
+      "opened": 1,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Primary rule: shape keys open boxes with the same printed shape.\n    if key.shape is not None:\n        return key.shape == box.shape\n\n    # Fallback rule (handles the \"moon\" box which has no corresponding shape key listed):\n    # Use the color-matching numbered key only for the moon box.\n    if key.number is not None:\n        return (box.shape == \"moon\") and (key.color == box.color)\n\n    return False",
+      "action": [
+        "red",
+        "red"
+      ],
+      "outcome": true,
+      "llm_response": "def predict(key, box) -> bool:\n    # Primary rule: shape keys open boxes with the same printed shape.\n    if key.shape is not None:\n        return key.shape == box.shape\n\n    # Fallback rule (handles the \"moon\" box which has no corresponding shape key listed):\n    # Use the color-matching numbered key only for the moon box.\n    if key.number is not None:\n        return (box.shape == \"moon\") and (key.color == box.color)\n\n    return False",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success"
+      ],
+      "success": 1,
+      "supposed_to_open": 1,
+      "error": 0
+    },
+    {
+      "t": 3,
+      "opened": 1,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis:\n    # - Most boxes open with a key whose SHAPE matches the box's shape (color doesn't matter).\n    # - The only exception is the MOON box, which opens by COLOR match (since no moon-shaped key exists).\n    if box.shape == \"moon\":\n        return key.color == box.color  # red box opened with red key\n    return (key.shape is not None) and (key.shape == box.shape)",
+      "action": [
+        "cloud",
+        "pink"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Hypothesis:\n    # - Most boxes open with a key whose SHAPE matches the box's shape (color doesn't matter).\n    # - The only exception is the MOON box, which opens by COLOR match (since no moon-shaped key exists).\n    if box.shape == \"moon\":\n        return key.color == box.color  # red box opened with red key\n    return (key.shape is not None) and (key.shape == box.shape)",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 4,
+      "opened": 2,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis: the correct key is the one whose NUMBER matches the box's POSITION in the line-up.\n    # (Supports evidence: red box is position 1 and opens with key numbered 1.)\n    if key.number is None:\n        return False\n    return key.number == box.position",
+      "action": [
+        "grey2",
+        "pink"
+      ],
+      "outcome": true,
+      "llm_response": "def predict(key, box) -> bool:\n    # Hypothesis: the correct key is the one whose NUMBER matches the box's POSITION in the line-up.\n    # (Supports evidence: red box is position 1 and opens with key numbered 1.)\n    if key.number is None:\n        return False\n    return key.number == box.position",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success"
+      ],
+      "success": 1,
+      "supposed_to_open": 1,
+      "error": 0
+    },
+    {
+      "t": 5,
+      "opened": 2,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis: numbered keys open the box in the matching lineup position.\n    # Evidence:\n    # - red key (#1) opened box at position 1 (red): success\n    # - grey2 key (#2) opened box at position 2 (pink): success\n    # - white key (#7) failed on box at position 3 (white): consistent\n    if key.number is None:\n        return False\n    return key.number == box.position",
+      "action": [
+        "green3",
+        "white"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Hypothesis: numbered keys open the box in the matching lineup position.\n    # Evidence:\n    # - red key (#1) opened box at position 1 (red): success\n    # - grey2 key (#2) opened box at position 2 (pink): success\n    # - white key (#7) failed on box at position 3 (white): consistent\n    if key.number is None:\n        return False\n    return key.number == box.position",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 6,
+      "opened": 2,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Hard constraints from observed evidence\n    if box.id == \"red\":\n        return key.id == \"red\"  # observed success\n\n    if box.id == \"pink\":\n        if key.id == \"cloud\":\n            return False  # observed failure\n        if key.id == \"grey2\":\n            return True   # observed success\n\n    if box.id == \"white\":\n        if key.id in (\"white\", \"green3\"):\n            return False  # observed failures\n\n    # If the box has been picked up, it may reveal a number (singleton set)\n    try:\n        if key.number is not None and getattr(box, \"number\", None):\n            if isinstance(box.number, set) and len(box.number) > 0 and key.number in box.number:\n                return True\n    except Exception:\n        pass\n\n    # Shape-matching heuristic for remaining boxes\n    if key.shape is not None and key.shape == box.shape:\n        return True\n\n    return False",
+      "action": [
+        "heart",
+        "purple"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Hard constraints from observed evidence\n    if box.id == \"red\":\n        return key.id == \"red\"  # observed success\n\n    if box.id == \"pink\":\n        if key.id == \"cloud\":\n            return False  # observed failure\n        if key.id == \"grey2\":\n            return True   # observed success\n\n    if box.id == \"white\":\n        if key.id in (\"white\", \"green3\"):\n            return False  # observed failures\n\n    # If the box has been picked up, it may reveal a number (singleton set)\n    try:\n        if key.number is not None and getattr(box, \"number\", None):\n            if isinstance(box.number, set) and len(box.number) > 0 and key.number in box.number:\n                return True\n    except Exception:\n        pass\n\n    # Shape-matching heuristic for remaining boxes\n    if key.shape is not None and key.shape == box.shape:\n        return True\n\n    return False",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 7,
+      "opened": 2,
+      "action": [
+        "examine",
+        "white"
+      ],
+      "llm_response": "PICK UP white",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them."
+      ]
+    },
+    {
+      "t": 8,
+      "opened": 2,
+      "action": [
+        "examine",
+        "purple"
+      ],
+      "llm_response": "PICK UP purple",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them."
+      ]
+    },
+    {
+      "t": 9,
+      "opened": 2,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Use the (observed or inferred) number of faces that have the box's shape.\n    # From history:\n    # - red opened with key number 1  -> red has 1 shaped face\n    # - pink opened with key number 2 -> pink has 2 shaped faces\n    # - white examined -> 4 shaped faces\n    # - purple examined -> 3 shaped faces\n    #\n    # Remaining blue is unknown; guess 5 to minimize attempts.\n    target_number_by_box_id = {\n        \"red\": 1,\n        \"pink\": 2,\n        \"white\": 4,\n        \"purple\": 3,\n        \"blue\": 5,\n    }\n\n    target = target_number_by_box_id.get(box.id, None)\n    if target is None:\n        return False\n\n    return key.number == target",
+      "action": [
+        "orange4",
+        "white"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Use the (observed or inferred) number of faces that have the box's shape.\n    # From history:\n    # - red opened with key number 1  -> red has 1 shaped face\n    # - pink opened with key number 2 -> pink has 2 shaped faces\n    # - white examined -> 4 shaped faces\n    # - purple examined -> 3 shaped faces\n    #\n    # Remaining blue is unknown; guess 5 to minimize attempts.\n    target_number_by_box_id = {\n        \"red\": 1,\n        \"pink\": 2,\n        \"white\": 4,\n        \"purple\": 3,\n        \"blue\": 5,\n    }\n\n    target = target_number_by_box_id.get(box.id, None)\n    if target is None:\n        return False\n\n    return key.number == target",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 1,
+      "error": 1
+    },
+    {
+      "t": 10,
+      "opened": 3,
+      "hypothesis": "def predict(key, box) -> bool:\n    return (box.id == \"purple\") and (key.id == \"green3\")",
+      "action": [
+        "green3",
+        "purple"
+      ],
+      "outcome": true,
+      "llm_response": "def predict(key, box) -> bool:\n    return (box.id == \"purple\") and (key.id == \"green3\")",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success"
+      ],
+      "success": 1,
+      "supposed_to_open": 1,
+      "error": 0
+    },
+    {
+      "t": 11,
+      "opened": 3,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis:\n    # - Shape-keys open the box whose printed shape matches the key's shape.\n    # - Number-keys open the box whose (possibly hidden) number matches the key's number,\n    #   but only when the box's number has been observed (singleton set).\n    if key.shape is not None:\n        return key.shape == box.shape\n\n    if key.number is not None:\n        # Only trust number-matching when the box.number is known exactly.\n        if isinstance(box.number, set) and len(box.number) == 1:\n            return key.number in box.number\n        return False\n\n    return False",
+      "action": [
+        "diamond",
+        "white"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Hypothesis:\n    # - Shape-keys open the box whose printed shape matches the key's shape.\n    # - Number-keys open the box whose (possibly hidden) number matches the key's number,\n    #   but only when the box's number has been observed (singleton set).\n    if key.shape is not None:\n        return key.shape == box.shape\n\n    if key.number is not None:\n        # Only trust number-matching when the box.number is known exactly.\n        if isinstance(box.number, set) and len(box.number) == 1:\n            return key.number in box.number\n        return False\n\n    return False",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 12,
+      "opened": 3,
+      "action": [
+        "examine",
+        "blue"
+      ],
+      "llm_response": "PICK UP blue",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them."
+      ]
+    },
+    {
+      "t": 13,
+      "opened": 3,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Learned from attempts:\n    # red box opens with red key\n    # pink box opens with grey2 key\n    # purple box opens with green3 key\n    #\n    # For remaining unopened boxes, use best-consistent hypothesis:\n    # blue box -> yellow5 (matches observed 5 faces with shape)\n    # white box -> pink (since white failed with white, green3, orange4, diamond)\n\n    mapping = {\n        \"red\": \"red\",\n        \"pink\": \"grey2\",\n        \"purple\": \"green3\",\n        \"blue\": \"yellow5\",\n        \"white\": \"pink\",\n    }\n\n    return mapping.get(box.id) == key.id",
+      "action": [
+        "pink",
+        "white"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Learned from attempts:\n    # red box opens with red key\n    # pink box opens with grey2 key\n    # purple box opens with green3 key\n    #\n    # For remaining unopened boxes, use best-consistent hypothesis:\n    # blue box -> yellow5 (matches observed 5 faces with shape)\n    # white box -> pink (since white failed with white, green3, orange4, diamond)\n\n    mapping = {\n        \"red\": \"red\",\n        \"pink\": \"grey2\",\n        \"purple\": \"green3\",\n        \"blue\": \"yellow5\",\n        \"white\": \"pink\",\n    }\n\n    return mapping.get(box.id) == key.id",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 14,
+      "opened": 3,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis: each box has shapes on N of its 6 faces.\n    # The correct key is the *numbered* key whose number equals (6 - N),\n    # i.e., the count of faces WITHOUT a shape.\n    if key.number is None:\n        return False\n\n    # Use observed number if available; otherwise use inferred values consistent with past successes.\n    inferred_faces_with_shape = {\n        \"red\": 5,    # opened with key 1 -> 6 - N = 1 => N = 5\n        \"pink\": 4,   # opened with key 2 -> 6 - N = 2 => N = 4\n        # \"white\": observed via PICK UP\n        # \"purple\": observed via PICK UP\n        # \"blue\": observed via PICK UP\n    }\n\n    possible_N = None\n    if hasattr(box, \"number\") and box.number:\n        # box.number is a set of possible values; after PICK UP it should be a singleton\n        possible_N = set(box.number)\n    else:\n        if box.id in inferred_faces_with_shape:\n            possible_N = {inferred_faces_with_shape[box.id]}\n        else:\n            # If totally unknown, avoid attempting to prevent wasting attempts.\n            return False\n\n    for N in possible_N:\n        required_num = 6 - N\n        if key.number == required_num:\n            return True\n\n    return False",
+      "action": [
+        "grey2",
+        "white"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Hypothesis: each box has shapes on N of its 6 faces.\n    # The correct key is the *numbered* key whose number equals (6 - N),\n    # i.e., the count of faces WITHOUT a shape.\n    if key.number is None:\n        return False\n\n    # Use observed number if available; otherwise use inferred values consistent with past successes.\n    inferred_faces_with_shape = {\n        \"red\": 5,    # opened with key 1 -> 6 - N = 1 => N = 5\n        \"pink\": 4,   # opened with key 2 -> 6 - N = 2 => N = 4\n        # \"white\": observed via PICK UP\n        # \"purple\": observed via PICK UP\n        # \"blue\": observed via PICK UP\n    }\n\n    possible_N = None\n    if hasattr(box, \"number\") and box.number:\n        # box.number is a set of possible values; after PICK UP it should be a singleton\n        possible_N = set(box.number)\n    else:\n        if box.id in inferred_faces_with_shape:\n            possible_N = {inferred_faces_with_shape[box.id]}\n        else:\n            # If totally unknown, avoid attempting to prevent wasting attempts.\n            return False\n\n    for N in possible_N:\n        required_num = 6 - N\n        if key.number == required_num:\n            return True\n\n    return False",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 15,
+      "opened": 3,
+      "action": [
+        "examine",
+        "pink"
+      ],
+      "llm_response": "PICK UP pink",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them."
+      ]
+    },
+    {
+      "t": 16,
+      "opened": 3,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Use confirmed successful pairings from history, and make best-effort guesses for unopened boxes.\n    if box.id == \"red\":\n        return key.id == \"red\"          # confirmed success\n    if box.id == \"pink\":\n        return key.id == \"grey2\"        # confirmed success\n    if box.id == \"purple\":\n        return key.id == \"green3\"       # confirmed success\n\n    # Remaining boxes (not yet opened in the history):\n    if box.id == \"blue\":\n        # After examining, blue has 5 faces with shapes -> try the \"5\" key.\n        return key.id == \"yellow5\"\n\n    if box.id == \"white\":\n        # \"orange4\" (and several others) already failed; try an untried key.\n        return key.id == \"purple\"\n\n    return False",
+      "action": [
+        "purple",
+        "white"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Use confirmed successful pairings from history, and make best-effort guesses for unopened boxes.\n    if box.id == \"red\":\n        return key.id == \"red\"          # confirmed success\n    if box.id == \"pink\":\n        return key.id == \"grey2\"        # confirmed success\n    if box.id == \"purple\":\n        return key.id == \"green3\"       # confirmed success\n\n    # Remaining boxes (not yet opened in the history):\n    if box.id == \"blue\":\n        # After examining, blue has 5 faces with shapes -> try the \"5\" key.\n        return key.id == \"yellow5\"\n\n    if box.id == \"white\":\n        # \"orange4\" (and several others) already failed; try an untried key.\n        return key.id == \"purple\"\n\n    return False",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 17,
+      "opened": 3,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Hard constraints learned from the attempt history (deterministic successes/failures)\n    known_true = {\n        (\"red\", \"red\"),\n        (\"grey2\", \"pink\"),\n        (\"green3\", \"purple\"),\n        # Best remaining hypothesis for the unopened boxes:\n        (\"yellow5\", \"blue\"),\n        (\"blue\", \"white\"),\n    }\n    known_false = {\n        (\"white\", \"white\"),\n        (\"cloud\", \"pink\"),\n        (\"green3\", \"white\"),\n        (\"heart\", \"purple\"),\n        (\"orange4\", \"white\"),\n        (\"diamond\", \"white\"),\n        (\"pink\", \"white\"),\n        (\"grey2\", \"white\"),\n        (\"purple\", \"white\"),\n    }\n\n    pair = (key.id, box.id)\n    if pair in known_true:\n        return True\n    if pair in known_false:\n        return False\n\n    # General fallback heuristic:\n    # If we have an exact observed number-of-shaped-faces for the box (singleton set),\n    # predict that a numbered key matching that value opens it, unless contradicted.\n    if key.number is not None and isinstance(getattr(box, \"number\", None), set) and len(box.number) == 1:\n        n = next(iter(box.number))\n        return key.number == n\n\n    return False",
+      "action": [
+        "blue",
+        "white"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Hard constraints learned from the attempt history (deterministic successes/failures)\n    known_true = {\n        (\"red\", \"red\"),\n        (\"grey2\", \"pink\"),\n        (\"green3\", \"purple\"),\n        # Best remaining hypothesis for the unopened boxes:\n        (\"yellow5\", \"blue\"),\n        (\"blue\", \"white\"),\n    }\n    known_false = {\n        (\"white\", \"white\"),\n        (\"cloud\", \"pink\"),\n        (\"green3\", \"white\"),\n        (\"heart\", \"purple\"),\n        (\"orange4\", \"white\"),\n        (\"diamond\", \"white\"),\n        (\"pink\", \"white\"),\n        (\"grey2\", \"white\"),\n        (\"purple\", \"white\"),\n    }\n\n    pair = (key.id, box.id)\n    if pair in known_true:\n        return True\n    if pair in known_false:\n        return False\n\n    # General fallback heuristic:\n    # If we have an exact observed number-of-shaped-faces for the box (singleton set),\n    # predict that a numbered key matching that value opens it, unless contradicted.\n    if key.number is not None and isinstance(getattr(box, \"number\", None), set) and len(box.number) == 1:\n        n = next(iter(box.number))\n        return key.number == n\n\n    return False",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure",
+        "Open box white with key blue: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 18,
+      "opened": 3,
+      "hypothesis": "def predict(key, box) -> bool:\n    # If we have observed the box's (hidden) number of shaped faces, prefer matching by number.\n    if isinstance(box.number, set) and len(box.number) == 1:\n        n = next(iter(box.number))\n\n        # Evidence-based exception: white box has n=4 but orange4 was tried and failed.\n        # Use the remaining untried \"cloud\" key as the best current hypothesis for the white box.\n        if box.id == \"white\" and n == 4:\n            return key.id == \"cloud\"\n\n        # General rule inferred from successful openings (pink<-2, purple<-3, red likely<-1, blue likely<-5)\n        if key.number is not None:\n            return key.number == n\n\n        return False\n\n    # If the box number is still uncertain/unobserved, fall back to the teacher's color-match rule.\n    return key.color == box.color",
+      "action": [
+        "cloud",
+        "white"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # If we have observed the box's (hidden) number of shaped faces, prefer matching by number.\n    if isinstance(box.number, set) and len(box.number) == 1:\n        n = next(iter(box.number))\n\n        # Evidence-based exception: white box has n=4 but orange4 was tried and failed.\n        # Use the remaining untried \"cloud\" key as the best current hypothesis for the white box.\n        if box.id == \"white\" and n == 4:\n            return key.id == \"cloud\"\n\n        # General rule inferred from successful openings (pink<-2, purple<-3, red likely<-1, blue likely<-5)\n        if key.number is not None:\n            return key.number == n\n\n        return False\n\n    # If the box number is still uncertain/unobserved, fall back to the teacher's color-match rule.\n    return key.color == box.color",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure",
+        "Open box white with key blue: failure",
+        "Open box white with key cloud: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 19,
+      "opened": 3,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Hard hypothesis based on observed successes/failures so far.\n    mapping = {\n        \"red\": \"red\",\n        \"pink\": \"grey2\",\n        \"purple\": \"green3\",\n        \"blue\": \"triangle\",\n        \"white\": \"heart\",\n    }\n    return mapping.get(box.id) == key.id",
+      "action": [
+        "triangle",
+        "blue"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Hard hypothesis based on observed successes/failures so far.\n    mapping = {\n        \"red\": \"red\",\n        \"pink\": \"grey2\",\n        \"purple\": \"green3\",\n        \"blue\": \"triangle\",\n        \"white\": \"heart\",\n    }\n    return mapping.get(box.id) == key.id",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure",
+        "Open box white with key blue: failure",
+        "Open box white with key cloud: failure",
+        "Open box blue with key triangle: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 20,
+      "opened": 4,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis:\n    # A key opens a box if either:\n    #  (A) the key's number matches the (possibly uncertain) number of shapes on the box, OR\n    #  (B) the key's color matches the box color.\n    #\n    # Handle uncertainty: box.number is a set of possible values; after PICK UP it becomes a singleton.\n    if key.number is not None:\n        try:\n            if key.number in box.number:\n                return True\n        except Exception:\n            pass\n\n    return key.color == box.color",
+      "action": [
+        "orange4",
+        "white"
+      ],
+      "outcome": true,
+      "llm_response": "def predict(key, box) -> bool:\n    # Hypothesis:\n    # A key opens a box if either:\n    #  (A) the key's number matches the (possibly uncertain) number of shapes on the box, OR\n    #  (B) the key's color matches the box color.\n    #\n    # Handle uncertainty: box.number is a set of possible values; after PICK UP it becomes a singleton.\n    if key.number is not None:\n        try:\n            if key.number in box.number:\n                return True\n        except Exception:\n            pass\n\n    return key.color == box.color",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure",
+        "Open box white with key blue: failure",
+        "Open box white with key cloud: failure",
+        "Open box blue with key triangle: failure",
+        "Open box white with key orange4: success"
+      ],
+      "success": 1,
+      "supposed_to_open": 1,
+      "error": 0
+    },
+    {
+      "t": 21,
+      "opened": 4,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Rule inferred from evidence:\n    # A box opens with the numbered key whose number equals the count of faces\n    # that have a shape printed on them (revealed via PICK UP / examine).\n    #\n    # If box.number is still unknown (empty set), we can only make a best guess.\n    # From history, the remaining unseen case is the red box, which fits \"1\".\n    \n    # Keys without numbers don't open boxes under this rule.\n    if key.number is None:\n        return False\n\n    # If we have observed (picked up) the box, box.number is a singleton set.\n    if getattr(box, \"number\", None):\n        return key.number in box.number\n\n    # Fallback for unobserved boxes (only red is unobserved in the given history).\n    if getattr(box, \"id\", None) == \"red\":\n        return key.number == 1\n\n    return False",
+      "action": [
+        "yellow5",
+        "blue"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Rule inferred from evidence:\n    # A box opens with the numbered key whose number equals the count of faces\n    # that have a shape printed on them (revealed via PICK UP / examine).\n    #\n    # If box.number is still unknown (empty set), we can only make a best guess.\n    # From history, the remaining unseen case is the red box, which fits \"1\".\n    \n    # Keys without numbers don't open boxes under this rule.\n    if key.number is None:\n        return False\n\n    # If we have observed (picked up) the box, box.number is a singleton set.\n    if getattr(box, \"number\", None):\n        return key.number in box.number\n\n    # Fallback for unobserved boxes (only red is unobserved in the given history).\n    if getattr(box, \"id\", None) == \"red\":\n        return key.number == 1\n\n    return False",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure",
+        "Open box white with key blue: failure",
+        "Open box white with key cloud: failure",
+        "Open box blue with key triangle: failure",
+        "Open box white with key orange4: success",
+        "Open box blue with key yellow5: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 1,
+      "error": 1
+    },
+    {
+      "t": 22,
+      "opened": 4,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis from evidence: numbered keys open boxes by matching the\n    # (possibly uncertain) count of faces on the box that have a shape on them.\n    # Shape-only keys do not open boxes.\n    if key.number is None:\n        return False\n\n    # box.number is a set: before PICK UP it may contain multiple candidates;\n    # after PICK UP it should be a singleton {exact_value}.\n    try:\n        candidates = box.number\n    except Exception:\n        candidates = set()\n\n    if isinstance(candidates, set) and len(candidates) > 0:\n        return key.number in candidates\n\n    # If we have no information, make the conservative guess that it won't open.\n    return False",
+      "action": [
+        "yellow5",
+        "blue"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Hypothesis from evidence: numbered keys open boxes by matching the\n    # (possibly uncertain) count of faces on the box that have a shape on them.\n    # Shape-only keys do not open boxes.\n    if key.number is None:\n        return False\n\n    # box.number is a set: before PICK UP it may contain multiple candidates;\n    # after PICK UP it should be a singleton {exact_value}.\n    try:\n        candidates = box.number\n    except Exception:\n        candidates = set()\n\n    if isinstance(candidates, set) and len(candidates) > 0:\n        return key.number in candidates\n\n    # If we have no information, make the conservative guess that it won't open.\n    return False",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure",
+        "Open box white with key blue: failure",
+        "Open box white with key cloud: failure",
+        "Open box blue with key triangle: failure",
+        "Open box white with key orange4: success",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key yellow5: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 1,
+      "error": 1
+    },
+    {
+      "t": 23,
+      "opened": 4,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Very conservative rule based on observed successes/failures.\n    # 1) Color-match keys can open same-color boxes.\n    if key.color == box.color:\n        return True\n\n    # 2) Some boxes open with a numbered key whose number matches the box's (observed) number of shaped faces.\n    # Only apply this when the box's number has been observed (i.e., box.number is a non-empty set).\n    if key.number is not None and getattr(box, \"number\", None):\n        if key.number in box.number:\n            # Incorporate observed negative evidence for the blue box.\n            if box.id == \"blue\" and key.id in {\"yellow5\", \"triangle\"}:\n                return False\n            return True\n\n    return False",
+      "action": [
+        "blue",
+        "blue"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Very conservative rule based on observed successes/failures.\n    # 1) Color-match keys can open same-color boxes.\n    if key.color == box.color:\n        return True\n\n    # 2) Some boxes open with a numbered key whose number matches the box's (observed) number of shaped faces.\n    # Only apply this when the box's number has been observed (i.e., box.number is a non-empty set).\n    if key.number is not None and getattr(box, \"number\", None):\n        if key.number in box.number:\n            # Incorporate observed negative evidence for the blue box.\n            if box.id == \"blue\" and key.id in {\"yellow5\", \"triangle\"}:\n                return False\n            return True\n\n    return False",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure",
+        "Open box white with key blue: failure",
+        "Open box white with key cloud: failure",
+        "Open box blue with key triangle: failure",
+        "Open box white with key orange4: success",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key blue: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 24,
+      "opened": 4,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Learned from observed successes:\n    # red box  -> red key\n    # pink box -> grey2 key\n    # white box -> orange4 key\n    # purple box -> green3 key\n    #\n    # Blue box remains unopened; choose the most promising untried numbered key.\n    mapping = {\n        \"red\": \"red\",\n        \"pink\": \"grey2\",\n        \"white\": \"orange4\",\n        \"purple\": \"green3\",\n        \"blue\": \"pink\",   # guess for the remaining unopened box\n    }\n\n    return mapping.get(box.id) == key.id",
+      "action": [
+        "pink",
+        "blue"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Learned from observed successes:\n    # red box  -> red key\n    # pink box -> grey2 key\n    # white box -> orange4 key\n    # purple box -> green3 key\n    #\n    # Blue box remains unopened; choose the most promising untried numbered key.\n    mapping = {\n        \"red\": \"red\",\n        \"pink\": \"grey2\",\n        \"white\": \"orange4\",\n        \"purple\": \"green3\",\n        \"blue\": \"pink\",   # guess for the remaining unopened box\n    }\n\n    return mapping.get(box.id) == key.id",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure",
+        "Open box white with key blue: failure",
+        "Open box white with key cloud: failure",
+        "Open box blue with key triangle: failure",
+        "Open box white with key orange4: success",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key blue: failure",
+        "Open box blue with key pink: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 25,
+      "opened": 4,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Learned from successful/failed attempts in the history:\n    mapping = {\n        \"red\": \"red\",         # success\n        \"pink\": \"grey2\",      # success\n        \"purple\": \"green3\",   # success\n        \"white\": \"orange4\",   # success\n        \"blue\": \"yellow5\",    # remaining hypothesis (number 5)\n    }\n    return mapping.get(box.id) == key.id",
+      "action": [
+        "yellow5",
+        "blue"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    # Learned from successful/failed attempts in the history:\n    mapping = {\n        \"red\": \"red\",         # success\n        \"pink\": \"grey2\",      # success\n        \"purple\": \"green3\",   # success\n        \"white\": \"orange4\",   # success\n        \"blue\": \"yellow5\",    # remaining hypothesis (number 5)\n    }\n    return mapping.get(box.id) == key.id",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure",
+        "Open box white with key blue: failure",
+        "Open box white with key cloud: failure",
+        "Open box blue with key triangle: failure",
+        "Open box white with key orange4: success",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key blue: failure",
+        "Open box blue with key pink: failure",
+        "Open box blue with key yellow5: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 1,
+      "error": 1
+    },
+    {
+      "t": 26,
+      "opened": 4,
+      "hypothesis": "def predict(key, box) -> bool:\n    return key.id == \"purple\" and box.id == \"blue\"",
+      "action": [
+        "purple",
+        "blue"
+      ],
+      "outcome": false,
+      "llm_response": "def predict(key, box) -> bool:\n    return key.id == \"purple\" and box.id == \"blue\"",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure",
+        "Open box white with key blue: failure",
+        "Open box white with key cloud: failure",
+        "Open box blue with key triangle: failure",
+        "Open box white with key orange4: success",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key blue: failure",
+        "Open box blue with key pink: failure",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key purple: failure"
+      ],
+      "success": 0,
+      "supposed_to_open": 0,
+      "error": 0
+    },
+    {
+      "t": 27,
+      "opened": 5,
+      "hypothesis": "def predict(key, box) -> bool:\n    # Learned (from successes/failures):\n    # red   -> red\n    # pink  -> grey2\n    # white -> orange4\n    # purple-> green3\n    #\n    # For blue, the strongest consistent rule is \"number on key == number of faces with shapes\":\n    # blue was examined as having 5 shaped faces => likely yellow5.\n    # As a fallback, also allow the triangle-shaped key (it was only tried before examining blue).\n    mapping = {\n        \"red\": {\"red\"},\n        \"pink\": {\"grey2\"},\n        \"white\": {\"orange4\"},\n        \"purple\": {\"green3\"},\n        \"blue\": {\"yellow5\", \"triangle\"},\n    }\n\n    if box.id in mapping:\n        return key.id in mapping[box.id]\n\n    # General heuristic (works for pink/purple/white if mapping wasn't present):\n    # if a box has a known/possible count of shaped faces (box.number is a set),\n    # match number-keys whose number is in that set.\n    if key.number is not None and hasattr(box, \"number\") and box.number:\n        return key.number in box.number\n\n    return False",
+      "action": [
+        "yellow5",
+        "blue"
+      ],
+      "outcome": true,
+      "llm_response": "def predict(key, box) -> bool:\n    # Learned (from successes/failures):\n    # red   -> red\n    # pink  -> grey2\n    # white -> orange4\n    # purple-> green3\n    #\n    # For blue, the strongest consistent rule is \"number on key == number of faces with shapes\":\n    # blue was examined as having 5 shaped faces => likely yellow5.\n    # As a fallback, also allow the triangle-shaped key (it was only tried before examining blue).\n    mapping = {\n        \"red\": {\"red\"},\n        \"pink\": {\"grey2\"},\n        \"white\": {\"orange4\"},\n        \"purple\": {\"green3\"},\n        \"blue\": {\"yellow5\", \"triangle\"},\n    }\n\n    if box.id in mapping:\n        return key.id in mapping[box.id]\n\n    # General heuristic (works for pink/purple/white if mapping wasn't present):\n    # if a box has a known/possible count of shaped faces (box.number is a set),\n    # match number-keys whose number is in that set.\n    if key.number is not None and hasattr(box, \"number\") and box.number:\n        return key.number in box.number\n\n    return False",
+      "evidence_lines": [
+        "Open box white with key white: failure",
+        "Open box red with key red: success",
+        "Open box pink with key cloud: failure",
+        "Open box pink with key grey2: success",
+        "Open box white with key green3: failure",
+        "Open box purple with key heart: failure",
+        "Examine white: 4 faces have shape on them.",
+        "Examine purple: 3 faces have shape on them.",
+        "Open box white with key orange4: failure",
+        "Open box purple with key green3: success",
+        "Open box white with key diamond: failure",
+        "Examine blue: 5 faces have shape on them.",
+        "Open box white with key pink: failure",
+        "Open box white with key grey2: failure",
+        "Examine pink: 2 faces have shape on them.",
+        "Open box white with key purple: failure",
+        "Open box white with key blue: failure",
+        "Open box white with key cloud: failure",
+        "Open box blue with key triangle: failure",
+        "Open box white with key orange4: success",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key blue: failure",
+        "Open box blue with key pink: failure",
+        "Open box blue with key yellow5: failure",
+        "Open box blue with key purple: failure",
+        "Open box blue with key yellow5: success"
+      ],
+      "success": 1,
+      "supposed_to_open": 1,
+      "error": 0
+    }
+  ]
+}

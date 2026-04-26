@@ -1,0 +1,371 @@
+
+SEMI-TRUE
+
+def predict(key, box) -> bool:
+    # Prefer the (possibly uncertain) belief over the box's number-of-faces-with-shapes.
+    # If known: open iff the key's number matches.
+    if getattr(box, "number", None):
+        return (key.number is not None) and (key.number in box.number)
+
+    # If the box number belief is unavailable/unknown, fall back to the teacher rule (color match).
+    return key.color == box.color
+
+
+SEMI-TRUE
+
+def predict(key, box) -> bool:
+    # Hypothesis: a box opens with the numbered key whose number matches
+    # the number of faces on that box that have a shape on them.
+    #
+    # box.number is a belief set:
+    # - before PICK UP it may be empty (unknown) or could contain multiple possibilities
+    # - after PICK UP it should be a singleton {exact_value}
+    #
+    # If box.number is unknown (empty), fall back to the box's lineup position.
+    if key.number is None:
+        return False
+
+    if getattr(box, "number", None):
+        # works for singleton or multi-valued belief sets
+        return key.number in box.number
+
+    # Fallback when we have no numeric belief yet
+    return key.number == box.position
+
+
+SEMI-TRUE
+
+def predict(key, box) -> bool:
+    # Prefer number-keys. Shape-keys have not worked in observed history.
+    if key.number is None:
+        return False
+
+    # If the box's number belief has been observed (non-empty set), use it directly.
+    if isinstance(box.number, set) and len(box.number) > 0:
+        return key.number in box.number
+
+    # Fallback: use the learned mapping from past successes (and best guess for white).
+    expected_number_by_box = {
+        "red": 1,     # observed success: red key (1)
+        "pink": 2,    # observed success: grey2 key (2)
+        "purple": 3,  # observed success: green3 key (3)
+        "blue": 5,    # observed success: yellow5 key (5)
+        "white": 4,   # best remaining hypothesis
+    }
+
+    expected = expected_number_by_box.get(box.id)
+    return expected is not None and key.number == expected
+
+
+
+TRUE 
+
+def predict(key, box) -> bool:
+    # Hypothesis: the correct key is the one whose *number* matches
+    # the (observed) number of faces on the box that have the box's shape printed.
+    #
+    # In this environment, box.number is a belief set:
+    # - empty set => unknown (we avoid guessing to minimize wasted attempts)
+    # - singleton set => known exact value after examination
+    if key.number is None:
+        return False
+
+    if getattr(box, "number", None) and len(box.number) > 0:
+        return key.number in box.number
+
+    return False
+
+
+
+FALSE 
+
+def predict(key, box) -> bool:
+    # Learned from successful attempts:
+    # red box  -> red key
+    # pink box -> grey2 key
+    # purple box -> green3 key
+    # blue box -> yellow5 key
+    #
+    # Remaining unopened: white box. Best consistent completion is orange4.
+
+    mapping = {
+        "red": "red",
+        "pink": "grey2",
+        "purple": "green3",
+        "blue": "yellow5",
+        "white": "orange4",
+    }
+
+    return mapping.get(box.id) == key.id
+
+
+
+TRUE 
+
+def predict(key, box) -> bool:
+    # The successful openings in the history match a rule:
+    # a numbered key opens a box iff the key's number equals the box's (observed) number of shaped faces.
+    # Shape-only keys do not open any boxes under this rule.
+
+    if key.number is None:
+        return False
+
+    # box.number is a set: empty if unknown, singleton after PICK UP (examine)
+    if not getattr(box, "number", None):
+        return False
+
+    return key.number in box.number
+
+
+
+TRUE 
+
+def predict(key, box) -> bool:
+    # Keys with shapes (no number) never open boxes in this puzzle.
+    if key.number is None:
+        return False
+
+    # box.number is a set representing current belief over the correct number.
+    # Before a PICK UP, it may be empty/unknown; after, it should be a singleton.
+    if not hasattr(box, "number") or box.number is None or len(box.number) == 0:
+        return False
+
+    return key.number in box.number
+
+
+SEMI-TRUE
+
+def predict(key, box) -> bool:
+    # Keys with a number open boxes whose (hidden) "number of faces with shapes"
+    # equals that number (once known via PICK UP / examination).
+    if key.number is not None:
+        # box.number is a set: unknown -> empty set; known -> singleton set {k}
+        return (len(box.number) == 1) and (key.number in box.number)
+
+    # Keys with a shape open boxes that have the same shape.
+    if key.shape is not None:
+        return key.shape == box.shape
+
+    return False
+
+
+TRUE
+
+def predict(key, box) -> bool:
+    # Hypothesis: a numbered key opens a box iff the key's number equals
+    # the (possibly uncertain) number of faces on the box that have a shape.
+    # We only act when the box.number belief is non-empty (i.e., observed).
+    if key.number is None:
+        return False
+
+    if not getattr(box, "number", None):
+        return False
+
+    return key.number in box.number
+
+TRUE
+
+def predict(key, box) -> bool:
+    # Hypothesis: a box opens with the (numbered) key whose number equals
+    # the number of faces on the box that have a shape printed on them.
+    # Keys without numbers never open any box.
+    if key.number is None:
+        return False
+
+    # box.number is a belief set; after PICK UP it should be a singleton.
+    # If still uncertain, allow any number still possible.
+    if hasattr(box, "number") and isinstance(box.number, set) and len(box.number) > 0:
+        return key.number in box.number
+
+    return False
+
+
+
+SEMI-TRUE
+
+def predict(key, box) -> bool:
+    # Use numbered keys only.
+    if key.number is None:
+        return False
+
+    # If we've picked up the box, box.number should be a singleton set with the true value.
+    if getattr(box, "number", None):
+        return key.number in box.number
+
+    # If the number-of-shaped-faces is still unknown, fall back to a simple minimal guess:
+    # match key number to the box's lineup position.
+    return key.number == box.position
+
+
+SEMI-TRUE
+
+def predict(key, box) -> bool:
+    # If we've examined the box, box.number should be a singleton set {n}.
+    # Then the correct key is the one whose number equals n (key must have a number).
+    if hasattr(box, "number") and isinstance(box.number, set) and len(box.number) > 0:
+        return (key.number is not None) and (key.number in box.number)
+
+    # If the box hasn't been examined yet (number unknown), fall back to the teacher's demo rule.
+    return key.color == box.color
+
+TRUE
+
+def predict(key, box) -> bool:
+    # Hypothesis: a numbered key opens a box iff the key's number matches
+    # the (observed) number of faces on the box that have a shape printed.
+    # box.number is a set: unknown before PICK UP (may be empty), singleton after.
+    if key.number is None:
+        return False
+    if not getattr(box, "number", None):
+        return False
+    return key.number in box.number
+
+
+TRUE
+
+def predict(key, box) -> bool:
+    # Hypothesis: a numbered key opens a box iff the key's number matches
+    # the (possibly uncertain) number of faces on the box that have a shape.
+    # Shape-only keys never open boxes.
+    if key.number is None:
+        return False
+
+    # If we've observed the box (box.number is a singleton set), use it.
+    if hasattr(box, "number") and isinstance(box.number, set) and len(box.number) > 0:
+        return key.number in box.number
+
+    # If unobserved/unknown, fall back to the consistent mapping inferred
+    # from successes: red->1, pink->2, purple->3, white->4, blue->5.
+    inferred_number_by_box_id = {
+        "red": 1,
+        "pink": 2,
+        "purple": 3,
+        "white": 4,
+        "blue": 5,
+    }
+    return key.number == inferred_number_by_box_id.get(box.id, -1)
+
+
+SEMI-TRUE
+
+def predict(key, box) -> bool:
+    # Rule inferred from evidence:
+    # A numbered key opens a box when the key's number equals the number of faces
+    # on the box that have a shape printed on them.
+    #
+    # If box.number is uncertain (empty set), fall back to the learned mapping by box id.
+
+    # If we know the exact number of shaped faces, use it.
+    if hasattr(box, "number") and isinstance(box.number, set) and len(box.number) == 1:
+        target = next(iter(box.number))
+        return (key.number is not None) and (key.number == target)
+
+    # Otherwise, use learned defaults from observations.
+    inferred = {
+        "red": 1,
+        "pink": 2,
+        "purple": 3,
+        "white": 4,
+        "blue": 5,
+    }
+    target = inferred.get(box.id, None)
+    return (target is not None) and (key.number is not None) and (key.number == target)
+
+
+FALSE
+
+def predict(key, box) -> bool:
+    # Hard-learned mappings from the action history (to minimize attempts).
+    learned = {
+        "red": "red",         # success
+        "pink": "grey2",      # success
+        "purple": "green3",   # success
+        "white": "orange4",   # success
+        "blue": "yellow5",    # inferred remaining
+    }
+    if box.id in learned:
+        return key.id == learned[box.id]
+
+    # Fallback: if the box's "number of faces with shapes" has been observed
+    # (singleton set), match it to a numbered key.
+    if getattr(box, "number", None) and isinstance(box.number, set) and len(box.number) == 1:
+        n = next(iter(box.number))
+        return key.number is not None and key.number == n
+
+    return False
+
+
+TRUE
+
+def predict(key, box) -> bool:
+    # Hypothesis: a numbered key opens a box if its number equals the
+    # (observed) number of faces on the box that have a shape printed.
+    if key.number is None:
+        return False
+
+    # box.number is a set of possible values; after PICK UP it should be a singleton set.
+    # If it's still empty/unknown, we abstain (predict False).
+    if not getattr(box, "number", None):
+        return False
+
+    return key.number in box.number
+
+
+
+SEMI-TRUE
+
+def predict(key, box) -> bool:
+    # Primary rule inferred from successes:
+    # number on key == number of faces on the box that have a shape on them.
+    # (box.number is a set: before PICK UP it's uncertain; after PICK UP it's a singleton.)
+    if key.number is not None:
+        if hasattr(box, "number") and isinstance(box.number, set) and len(box.number) > 0:
+            return key.number in box.number
+
+    # Fallback (from the teacher demo): match by color when number evidence isn't available.
+    return key.color == box.color
+
+
+TRUE
+
+def predict(key, box) -> bool:
+    # Boxes are opened by matching the key's number to the box's (possibly uncertain) number.
+    # box.number is a set of possible values; after PICK UP it should collapse to a singleton.
+    if key.number is None:
+        return False
+    if not getattr(box, "number", None):
+        return False
+    return key.number in box.number
+
+
+
+FALSE
+
+def predict(key, box) -> bool:
+    # Learned (from successes/failures):
+    # red   -> red
+    # pink  -> grey2
+    # white -> orange4
+    # purple-> green3
+    #
+    # For blue, the strongest consistent rule is "number on key == number of faces with shapes":
+    # blue was examined as having 5 shaped faces => likely yellow5.
+    # As a fallback, also allow the triangle-shaped key (it was only tried before examining blue).
+    mapping = {
+        "red": {"red"},
+        "pink": {"grey2"},
+        "white": {"orange4"},
+        "purple": {"green3"},
+        "blue": {"yellow5", "triangle"},
+    }
+
+    if box.id in mapping:
+        return key.id in mapping[box.id]
+
+    # General heuristic (works for pink/purple/white if mapping wasn't present):
+    # if a box has a known/possible count of shaped faces (box.number is a set),
+    # match number-keys whose number is in that set.
+    if key.number is not None and hasattr(box, "number") and box.number:
+        return key.number in box.number
+
+    return False

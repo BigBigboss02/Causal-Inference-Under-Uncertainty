@@ -1,0 +1,11 @@
+action_id,action_type,key,box,success,supposed_to_open,error
+1,attempt,red,red,0,1,1
+2,attempt,purple,purple,0,0,0
+3,attempt,purple,purple,0,0,0
+4,attempt,red,red,1,1,0
+5,attempt,blue,blue,0,0,0
+6,attempt,orange4,white,1,1,0
+7,attempt,yellow5,blue,1,1,0
+8,attempt,green3,purple,0,1,1
+9,attempt,green3,purple,1,1,0
+10,attempt,grey2,pink,1,1,0

@@ -1,0 +1,165 @@
+{
+  "runs": [
+    {
+      "run_number": 1,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Open a box with a key that matches the box's color.\n    return key.color == box.color",
+      "solved": false,
+      "trials": 5,
+      "opened": 0
+    },
+    {
+      "run_number": 2,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Use the teacher's rule: the correct key matches the box color.\n    return key.color == box.color",
+      "solved": false,
+      "trials": 5,
+      "opened": 1
+    },
+    {
+      "run_number": 3,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis: the correct key opens a box if their colors match.\n    # Ignore shapes and numbers; mechanical failures may occur but don't change the rule.\n    return key.color == box.color",
+      "solved": false,
+      "trials": 5,
+      "opened": 1
+    },
+    {
+      "run_number": 4,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Open if and only if the key color matches the box color\n    return key.color == box.color",
+      "solved": false,
+      "trials": 70,
+      "opened": 1
+    },
+    {
+      "run_number": 5,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Based on the teacher's rule: the correct key matches the box color.\n    return key.color == box.color",
+      "solved": false,
+      "trials": 70,
+      "opened": 1
+    },
+    {
+      "run_number": 6,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Rule inferred from observations:\n    # The correct key's number equals the number of faces on the box that have the shape.\n    # After PICK UP, box.number is a singleton set {n}. Before PICK UP, it's an empty set.\n    # Only attempt when we know the number.\n    if key.number is None:\n        return False\n\n    bn = getattr(box, \"number\", set())\n    # Handle both certain (singleton set) and possible int fallback\n    if isinstance(bn, set):\n        if len(bn) != 1:\n            return False\n        target = next(iter(bn))\n    else:\n        # In case the environment provides a plain int\n        target = bn\n\n    return key.number == target",
+      "solved": true,
+      "trials": 55,
+      "opened": 5
+    },
+    {
+      "run_number": 7,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Prefer using the observed number of faces (if available)\n    # Box.number is a set; after PICK UP it becomes a singleton {exact_count}\n    if key.number is None:\n        return False\n\n    if hasattr(box, \"number\") and isinstance(box.number, set) and len(box.number) > 0:\n        return key.number in box.number\n\n    # Fallback: use learned mapping from this scenario\n    # Counts of faces with the shape per box color (from observations in this game):\n    color_to_count = {\n        \"red\": 1,\n        \"pink\": 2,\n        \"white\": 4,\n        \"purple\": 3,\n        \"blue\": 5,\n    }\n    target = color_to_count.get(box.color)\n    if target is None:\n        return False\n    return key.number == target",
+      "solved": true,
+      "trials": 62,
+      "opened": 5
+    },
+    {
+      "run_number": 8,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Use the hypothesis: the correct key has a number equal to\n    # the number of faces on the box that have its shape.\n    # After a PICK UP action, box.number becomes a singleton set {k}.\n    # Before PICK UP, box.number is empty/uncertain; avoid guessing then.\n\n    # Only consider keys that have a number.\n    if key.number is None:\n        return False\n\n    # Require that we know the box's exact number (singleton set).\n    if not hasattr(box, \"number\") or not isinstance(box.number, set) or len(box.number) != 1:\n        return False\n\n    required_num = next(iter(box.number))\n    return key.number == required_num",
+      "solved": true,
+      "trials": 47,
+      "opened": 5
+    },
+    {
+      "run_number": 9,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Prefer the discovered rule: the correct key's number equals\n    # the number of faces on the box that have a shape.\n    # After a PICK UP action, box.number is a singleton set {n}.\n    if hasattr(box, \"number\"):\n        if len(box.number) == 1:\n            target = next(iter(box.number))\n            return (key.number is not None) and (key.number == target)\n        elif len(box.number) > 1:\n            # If uncertainty with multiple candidates (rare), allow a numeric match.\n            if key.number is not None and key.number in box.number:\n                return True\n\n    # Fallback heuristic when the number is unknown: try matching by color.\n    return key.color == box.color",
+      "solved": true,
+      "trials": 66,
+      "opened": 5
+    },
+    {
+      "run_number": 10,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Open if and only if the key color matches the box color\n    return key.color == box.color",
+      "solved": false,
+      "trials": 70,
+      "opened": 1
+    },
+    {
+      "run_number": 11,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis: A box opens with the key whose number equals the number of faces\n    # on the box that have the shape printed.\n    # Known counts from observations and prior successes:\n    inferred_counts = {\n        \"red\": 1,\n        \"pink\": 2,\n        \"white\": 4,\n        \"purple\": 3,\n        \"blue\": 5,\n    }\n\n    target = None\n\n    # If the box.number set is a known singleton after observation, use it.\n    if hasattr(box, \"number\") and isinstance(box.number, set) and len(box.number) == 1:\n        target = next(iter(box.number))\n    else:\n        # Fall back to inferred counts by box id\n        target = inferred_counts.get(box.id)\n\n    if target is not None and key.number is not None:\n        return key.number == target\n\n    return False",
+      "solved": true,
+      "trials": 50,
+      "opened": 5
+    },
+    {
+      "run_number": 12,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis: The correct key is the one whose number equals\n    # the number of faces on the box that have a shape.\n    # After a PICK UP action, box.number becomes a singleton set {exact_count}.\n    # Before PICK UP, box.number is an empty set and we avoid guessing.\n    if key.number is None:\n        return False\n    if isinstance(box.number, set) and key.number in box.number:\n        return True\n    return False",
+      "solved": true,
+      "trials": 56,
+      "opened": 5
+    },
+    {
+      "run_number": 13,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Use the teacher's rule: the correct key matches the box color\n    return key.color == box.color",
+      "solved": false,
+      "trials": 70,
+      "opened": 1
+    },
+    {
+      "run_number": 14,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Prefer rule: a numbered key opens a box if its number equals\n    # the number of faces showing a shape on that box.\n    # box.number is a set: empty if unknown; singleton {n} if observed.\n    if key.number is not None:\n        if box.number and key.number in box.number:\n            return True\n        else:\n            return False\n    # Do not use shape/color-based guesses, as evidence contradicts them.\n    return False",
+      "solved": true,
+      "trials": 48,
+      "opened": 5
+    },
+    {
+      "run_number": 15,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Strategy: A box opens with the key whose number equals the count of faces on the box that have a shape.\n    # If the box's number-of-shaped-faces is known (box.number set is non-empty), use it directly.\n    # Otherwise, fall back to deduced counts from observations.\n    if key.number is None:\n        return False\n\n    # If observed, box.number is a singleton set with the exact count.\n    if hasattr(box, \"number\") and isinstance(box.number, set) and len(box.number) > 0:\n        return key.number in box.number\n\n    # Fallback mapping (deduced from observations):\n    # red: 1, pink: 2, white: 4, purple: 3, blue: 5\n    deduced_counts = {\n        \"red\": 1,\n        \"pink\": 2,\n        \"white\": 4,\n        \"purple\": 3,\n        \"blue\": 5,\n    }\n    target = deduced_counts.get(box.id)\n    if target is None:\n        return False\n\n    return key.number == target",
+      "solved": true,
+      "trials": 59,
+      "opened": 5
+    },
+    {
+      "run_number": 16,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Unlock if key color matches box color (as per teacher's rule).\n    return key.color == box.color",
+      "solved": false,
+      "trials": 70,
+      "opened": 1
+    },
+    {
+      "run_number": 17,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Use the color-matching rule from the demonstration:\n    # A key opens a box if their colors match.\n    return key.color == box.color",
+      "solved": false,
+      "trials": 70,
+      "opened": 1
+    },
+    {
+      "run_number": 18,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis: a box opens with the key of the same color (per teacher's demo).\n    return key.color == box.color",
+      "solved": false,
+      "trials": 70,
+      "opened": 1
+    },
+    {
+      "run_number": 19,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Rule from the teacher: use a key that matches the color of the box.\n    return key.color == box.color",
+      "solved": false,
+      "trials": 70,
+      "opened": 1
+    },
+    {
+      "run_number": 20,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Key with a shape opens the box with the same shape\n    if key.shape is not None:\n        return key.shape == box.shape\n\n    # Key with a number opens the box whose number-of-shape-faces matches\n    if key.number is not None:\n        # box.number is a set; after observation it's a singleton {exact_value}\n        if getattr(box, \"number\", None):\n            return key.number in box.number\n        return False\n\n    return False",
+      "solved": false,
+      "trials": 70,
+      "opened": 1
+    },
+    {
+      "run_number": 21,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis: A box opens with a key of the same color.\n    # Ignore numbers/shapes; rely solely on color match per teacher's rule.\n    return key.color == box.color",
+      "solved": false,
+      "trials": 70,
+      "opened": 1
+    },
+    {
+      "run_number": 22,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # Hypothesis: The correct key has a number matching the number of faces\n    # on the box that have the printed shape.\n    # After PICK UP, box.number becomes a singleton set {n}. Before that, it's empty.\n    # We only predict True when the box's number is known and matches the key's number.\n    if hasattr(box, \"number\") and isinstance(box.number, set) and len(box.number) == 1:\n        n = next(iter(box.number))\n        if key.number is not None and key.number == n:\n            return True\n    return False",
+      "solved": true,
+      "trials": 37,
+      "opened": 5
+    },
+    {
+      "run_number": 23,
+      "last_hypothesis": "def predict(key, box) -> bool:\n    # If we know the exact number of faces-with-shapes for this box,\n    # use the number-matching rule.\n    if box.number:\n        n = next(iter(box.number))\n        return key.number is not None and key.number == n\n\n    # If we don't know the number (e.g., box not examined), fall back to color match.\n    return key.color == box.color",
+      "solved": true,
+      "trials": 64,
+      "opened": 5
+    }
+  ]
+}
