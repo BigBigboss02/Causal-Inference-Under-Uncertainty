@@ -10,36 +10,23 @@ from llm.llm import LLM
 
 class SPBaseline:
 
-    def __init__(
-        self,
-        env,
-        logger,
-        model_name="gpt-5.2",
-        temperature=0.2,
-        max_tokens=200,
-    ):
-        self.env: Environment = env
-        self.logger = logger
+    def __init__(self, env: Environment, llm: LLM, logger):
 
-        self.llm = LLM(
-            model=model_name,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
+        self.env: Environment = env
+        self.llm: LLM = llm
+        self.logger = logger
 
         self.hypothesis: Optional[str] = None
         self.evidence = list()
-        self.evidence_lines: List[str] = []
+        self.evidence_lines: List[str] = [] # stringified evidence sent as prompt to llm
 
-    def _log(self, msg: str) -> None:
-        try:
-            self.logger.log(msg)
-        except Exception:
-            pass
-        print(msg)
 
     def _select_action(self):
-
+        """
+        select next opening action
+        randomly selected a key-box action consistent with the hypothesis
+        if none exists, randomly select an action
+        """
         opened = set([pair[1] for pair in self.env.success_pairs])
         candidate_actions = list()
         fallback_actions = list()
@@ -63,6 +50,7 @@ class SPBaseline:
                 return False
 
         # check consistency with failure evidence
+        # disabled for stochastic oracle
         return True
 
     def run(self, max_trials: int) -> dict:
@@ -71,14 +59,14 @@ class SPBaseline:
         self.history = []
 
         while not self.env.is_solved() and self.trial_count < max_trials:
-            self._log(f"TRIAL {self.trial_count}")
+            self.logger.log(f"TRIAL {self.trial_count}")
 
             if self.evidence_lines:
-                self._log("Evidence lines (included in prompt):")
+                self.logger.log("Evidence lines (included in prompt):")
                 for i, line in enumerate(self.evidence_lines, start=1):
-                    self._log(f"{i}. {line}")
+                    self.logger.log(f"{i}. {line}")
             else:
-                self._log("Evidence lines (included in prompt): (none)")
+                self.logger.log("Evidence lines (included in prompt): (none)")
 
             if self.trial_count == 0:
                 self.hypothesis, h_name = self.llm.generate([])
@@ -90,8 +78,8 @@ class SPBaseline:
                     if self._accept_h():
                         break
 
-            self._log(f"LLM response:\n{self.hypothesis}")
-            self._log(f"Hypothesis:\n{self.hypothesis}")
+            self.logger.log(f"LLM response:\n{self.hypothesis}")
+            self.logger.log(f"Hypothesis:\n{self.hypothesis}")
 
             key, box = self._select_action()
             outcome = self.env.test_action(key, box)
@@ -102,9 +90,9 @@ class SPBaseline:
                 f"Open box {box.id} with key {key.id}: {status}"
             )
 
-            self._log(f"Action chosen: ({key.id}, {box.id})")
-            self._log(f"Outcome: {outcome}")
-            self._log(f"Boxes opened: {self.env.success_pairs}")
+            self.logger.log(f"Action chosen: ({key.id}, {box.id})")
+            self.logger.log(f"Outcome: {outcome}")
+            self.logger.log(f"Boxes opened: {self.env.success_pairs}")
 
             self.trial_count += 1
             self._interaction_seq += 1

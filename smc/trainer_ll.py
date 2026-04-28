@@ -5,7 +5,7 @@ from itertools import product
 from typing import Iterable, List, Tuple, Dict, Any, Optional
 
 from environment import Environment
-from gen_soc import Generator
+from smc.generator import Generator
 from smc_soc import Engine
 
 

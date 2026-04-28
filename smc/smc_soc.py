@@ -2,7 +2,7 @@ from collections import defaultdict
 from environment import Environment, Key, Box
 from typing import List, Dict
 
-from gen_soc import Generator
+from smc.generator import Generator
 
 import math, random, copy
 

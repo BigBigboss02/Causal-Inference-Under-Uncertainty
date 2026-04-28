@@ -7,7 +7,7 @@ from typing import Dict, Any, List, Tuple
 from tqdm import tqdm
 
 from environment import Environment
-from gen_soc import Generator
+from smc.generator import Generator
 from smc_soc_train import Engine
 
 

@@ -1,6 +1,6 @@
 from smc_soc import Engine
 from environment import Environment
-from gen_soc import Generator
+from smc.generator import Generator
 from utils.plotter2 import Plotter2
 
 

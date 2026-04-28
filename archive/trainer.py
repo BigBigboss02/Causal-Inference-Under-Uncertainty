@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Iterable, List, Tuple, Optional, Dict, Any
 from smc import Engine
 from environment import Environment
-from smc.gen_soc import Generator
+from smc.generator import Generator
 
 
 class BoxTaskTrainer:

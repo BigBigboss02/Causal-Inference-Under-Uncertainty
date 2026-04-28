@@ -3,7 +3,7 @@ Single SMC run: plot E[theta] over trials and per-particle weights over trials.
 """
 from smc_soc import Engine
 from environment import Environment
-from gen_soc import Generator
+from smc.generator import Generator
 from utils.plotter import Plotter2
 
 

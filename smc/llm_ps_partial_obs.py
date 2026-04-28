@@ -8,62 +8,41 @@ from llm.llm import LLM
 from llm.prompt_partially_observed import action_prompt, env_prompt, starter_code_prompt, sys_prompt
 
 
-class SPBaselinePartiallyObserved:
-    """
-    Same idea as `smc/sp_baseline.py`, but the LLM can also request an Observe action:
+class LlmPSP:
 
-    - If LLM outputs: "PICK UP <box_id>"
-      we reveal the true number of faces from `environment.py` and append a single
-      evidence line:
-        "Examined box <id>, <n> faces have <shape> shape"
-
-    - Otherwise, the LLM output is treated as a hypothesis program for `predict(key, box)`
-      and the rest of the loop is the same as `SPBaseline`.
-
-    This class only updates in-memory state and appends each step to ``history``.
-    Persisting JSON/CSV is the caller's responsibility (see ``driver_sp_baseline_partially_observed.py``).
-    """
-
-    def __init__(
-        self,
-        env,
-        logger,
-        model_name="gpt-5.2",
-        temperature=0.2,
-        max_tokens=200,
-    ):
+    def __init__(self, env, logger, llm: LLM):
         self.env: Environment = env
+        self.llm: LLM = llm
+
         self.logger = logger
 
-        self.llm = LLM(
-            model=model_name,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
-
         self.hypothesis: Optional[str] = None
-        self.evidence_lines: List[str] = []
-
-    def _log(self, msg: str) -> None:
-        try:
-            self.logger.log(msg)
-        except Exception:
-            pass
-        print(msg)
+        self.evidence_lines: List[str] = list()
 
     def _parse_pick_up(self, text: str) -> Optional[str]:
+        """
+        search LLM response for pick up action
+        """
         m = re.match(r"^\s*PICK\s+UP\s+([A-Za-z0-9_\-]+)\s*$", text, flags=re.IGNORECASE)
         if not m:
             return None
         return m.group(1)
 
     def _build_user_prompt(self) -> str:
+        """
+        build prompt for next LLM action
+        """
         history = "\n".join(self.evidence_lines).strip()
         user_prompt = env_prompt + action_prompt[0] + starter_code_prompt + action_prompt[1]
         user_prompt += (history + "\n") if history else "(no prior actions/evidence)\n"
         return user_prompt
 
     def _select_action(self):
+        """
+        select opening action based on currently active hypothesis
+        randomly select a key-box opening action consistent with hypothesis
+        if none exists, perform random action
+        """
         opened = set([pair[1] for pair in self.env.success_pairs])
         candidate_actions = list()
         fallback_actions = list()
@@ -85,29 +64,32 @@ class SPBaselinePartiallyObserved:
         self.history = []
 
         while not self.env.is_solved() and self.trial_count < max_trials:
-            self._log(f"TRIAL {self.trial_count}")
+            self.logger.log(f"Trial {self.trial_count}")
 
+            # log observed evidence from opening/pick up actions
             if self.evidence_lines:
-                self._log("Evidence lines (included in prompt):")
+                self.logger.log("Evidence lines (included in prompt):")
                 for i, line in enumerate(self.evidence_lines, start=1):
-                    self._log(f"{i}. {line}")
+                    self.logger.log(f"{i}. {line}")
             else:
-                self._log("Evidence lines (included in prompt): (none)")
+                self.logger.log("Evidence lines (included in prompt): (none)")
 
+            # get next action from LLM
             user_prompt = self._build_user_prompt()
             response = self.llm.get_openai_completion(sys_prompt, user_prompt)
-            self._log(f"LLM response:\n{response}")
+
+            self.logger.log(f"LLM response:\n{response}")
 
             box_to_examine = self._parse_pick_up(response)
             if box_to_examine is not None:
+                # if PICK UP action is chosen
                 if box_to_examine not in self.env.id_to_box:
-                    self._log(f"Invalid PICK UP target: {box_to_examine}")
+                    self.logger.log(f"Invalid PICK UP: {box_to_examine}")
                 else:
                     box = self.env.id_to_box[box_to_examine]
                     box.number = set([box.count])
                     line = f"Examine {box_to_examine}: {box.count} faces have shape on them."
                     self.evidence_lines.append(line)
-                    self._log(line)
 
                 self._interaction_seq += 1
                 self.history.append(
@@ -120,7 +102,8 @@ class SPBaselinePartiallyObserved:
                     }
                 )
                 continue
-
+            
+            # if LLM prefers to generate a new hypothesis
             hypothesis = response
             for _ in range(3):
                 if check_valid_program(hypothesis):
@@ -128,22 +111,24 @@ class SPBaselinePartiallyObserved:
                 hypothesis = self.llm.get_openai_completion(sys_prompt, user_prompt)
 
             if not check_valid_program(hypothesis):
-                self._log("Failed to get a valid hypothesis program; skipping trial.")
+                self.logger.log("Failed to get a valid hypothesis program; skipping trial.")
                 self.trial_count += 1
                 continue
 
             self.hypothesis = hypothesis
-            self._log(f"Hypothesis:\n{self.hypothesis}")
+            self.logger.log(f"Hypothesis:\n{self.hypothesis}")
 
+            # select and test new trial
             key, box = self._select_action()
             outcome = self.env.test_action(key, box)
-
+            
+            # update evidence
             status = "success" if outcome is True else "failure"
             self.evidence_lines.append(f"Open box {box.id} with key {key.id}: {status}")
 
-            self._log(f"Action chosen: ({key.id}, {box.id})")
-            self._log(f"Outcome: {outcome}")
-            self._log(f"Boxes opened: {self.env.success_pairs}")
+            self.logger.log(f"Action chosen: ({key.id}, {box.id})")
+            self.logger.log(f"Outcome: {outcome}")
+            self.logger.log(f"Boxes opened: {self.env.success_pairs}")
 
             self.trial_count += 1
             self._interaction_seq += 1
