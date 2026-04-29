@@ -1,3 +1,7 @@
+"""
+logger for SMC and LLM-PS models
+"""
+
 class Logger:
     def __init__(self, logging: bool = True):
         self.logging = True

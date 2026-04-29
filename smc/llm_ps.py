@@ -3,12 +3,10 @@ from typing import List, Optional
 
 from environment import Environment
 from llm.llm import LLM
-#from llm.llm_vs2 import LLM
 from llm.code import execute_hypothesis_code
-from llm.llm import LLM
 
 
-class SPBaseline:
+class LlmPS:
 
     def __init__(self, env: Environment, llm: LLM, logger):
 

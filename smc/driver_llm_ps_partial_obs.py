@@ -5,12 +5,12 @@ import re
 from typing import Optional
 
 from environment import Environment, key_box_mapping
-from sp_baseline_partially_observed import SPBaselinePartiallyObserved
-from utils.plot_hist_empirical_error import plot_empirical_success_histogram
+from llm_ps_partial_obs import LlmPSP
+from plot_utils.plot_hist_empirical_error import plot_empirical_success_histogram
 
-HISTORY_STEM = "sp_baseline_partially_observed_history"
-ACTIONS_STEM = "sp_baseline_partially_observed_actions"
-LAST_HYP_HISTORY_DIR = "ps_baseline_partially_observed_history"
+HISTORY_STEM = "llm_ps_partially_observed_history"
+ACTIONS_STEM = "llm_ps_partially_observed_actions"
+LAST_HYP_HISTORY_DIR = "llm_ps_partially_observed_history"
 LAST_HYP_BY_RUN_FILE = "last_hypothesis.json"
 _RUN_NUMBER_RE = re.compile(rf"^{re.escape(HISTORY_STEM)}_(\d+)\.json$")
 
@@ -118,7 +118,7 @@ class _NoopLogger:
 
 
 def enrich_partially_observed_history(history: list) -> list:
-    """Same derived fields as ``driver_sp_baseline.py`` for open attempts."""
+    """Same derived fields as ``driver_llm_ps.py`` for open attempts."""
     enriched = []
     for step in history:
         action = step.get("action") or []
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     run_number_base = None  # set an int to force suffixes: base, base+1, ...
 
     out_dir = pathlib.Path(__file__).resolve().parent
-    histogram_out = out_dir / "hist_partially_observed_empirical_success.png"
+    histogram_out = out_dir / "hist_llm_ps_partially_observed_empirical_success.png"
 
     payloads_for_histogram = []
 
@@ -223,7 +223,7 @@ if __name__ == "__main__":
 
         env = Environment(opening_prob=opening_prob, include_inspect=False)
         logger = _NoopLogger()
-        agent = SPBaselinePartiallyObserved(env, logger, model_name=model_name)
+        agent = LlmPSP(env, logger, model_name=model_name)
         result = agent.run(max_trials=max_trials)
         write_partially_observed_run_artifacts(
             out_dir,
@@ -244,7 +244,7 @@ if __name__ == "__main__":
         }
         for p in payloads_for_histogram
     ]
-    label = f"{HISTORY_STEM}_<n>.json ({len(runs_for_plot)} runs)"
+    label = f"{HISTORY_STEM} (LLM-PS-P) ({len(runs_for_plot)} runs)"
     if not plot_empirical_success_histogram(
         runs_for_plot,
         histogram_out,

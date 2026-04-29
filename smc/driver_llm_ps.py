@@ -5,17 +5,17 @@ import re
 from typing import Optional
 
 from environment import Environment, key_box_mapping
-from smc.llm_ps import SPBaseline
-from utils.plot_hist_empirical_error import plot_empirical_success_histogram
+from llm_ps import LlmPS
+from plot_utils.plot_hist_empirical_error import plot_empirical_success_histogram
 
-HISTORY_STEM = "sp_baseline_sto_history"
-ACTIONS_STEM = "sp_baseline_sto_actions"
-LAST_HYP_HISTORY_DIR = "sp_baseline_sto_last_hypothesis_history"
-LAST_HYP_BY_RUN_FILE = "last_hypothesis_sto.json"
+HISTORY_STEM = "llm_ps_stochastic_history"
+ACTIONS_STEM = "llm_ps_stochastic_actions"
+LAST_HYP_HISTORY_DIR = "llm_ps_stochastic_last_hypothesis_history"
+LAST_HYP_BY_RUN_FILE = "last_hypothesis_stochastic.json"
 _RUN_NUMBER_RE = re.compile(rf"^{re.escape(HISTORY_STEM)}_(\d+)\.json$")
 
 
-def next_sp_baseline_run_number(out_dir: pathlib.Path) -> int:
+def next_llm_ps_stochastic_run_number(out_dir: pathlib.Path) -> int:
     """Next run index from existing numbered history JSON files in ``out_dir``."""
     max_n = 0
     for p in out_dir.iterdir():
@@ -61,7 +61,7 @@ def append_last_hypothesis_log(
     return path
 
 
-def enrich_sp_baseline_history(history: list) -> list:
+def enrich_llm_ps_stochastic_history(history: list) -> list:
     """Derived success / supposed_to_open / error for each open attempt (same as partial driver)."""
     enriched = []
     for step in history:
@@ -104,7 +104,7 @@ def _csv_rows_from_history(history: list) -> list:
     return rows
 
 
-def write_sp_baseline_run_artifacts(
+def write_llm_ps_stochastic_run_artifacts(
     out_dir: pathlib.Path,
     run_number: int,
     result: dict,
@@ -112,7 +112,7 @@ def write_sp_baseline_run_artifacts(
     max_trials: int,
 ) -> tuple[pathlib.Path, pathlib.Path, pathlib.Path]:
     """Write enriched history JSON, CSV, and aggregate last-hypothesis log for one run."""
-    history = enrich_sp_baseline_history(result["history"])
+    history = enrich_llm_ps_stochastic_history(result["history"])
     payload = {
         "meta": {
             "run_number": run_number,
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     run_number_base = None  # set an int to force suffixes: base, base+1, ...
 
     out_dir = pathlib.Path(__file__).resolve().parent
-    histogram_out = out_dir / "hist_sp_baseline_empirical_success.png"
+    histogram_out = out_dir / "hist_llm_ps_stochastic_empirical_success.png"
 
     payloads_for_histogram = []
     total_supposed_to_open = 0
@@ -193,13 +193,13 @@ if __name__ == "__main__":
         if run_number_base is not None:
             run_number = run_number_base + k
         else:
-            run_number = next_sp_baseline_run_number(out_dir)
+            run_number = next_llm_ps_stochastic_run_number(out_dir)
 
         env = Environment(opening_prob=opening_prob, include_inspect=False)
         logger = _NoopLogger()
-        agent = SPBaseline(env, logger, model_name=model_name)
+        agent = LlmPS(env, logger, model_name=model_name)
         result = agent.run(max_trials=max_trials)
-        write_sp_baseline_run_artifacts(
+        write_llm_ps_stochastic_run_artifacts(
             out_dir,
             run_number,
             result,
@@ -212,7 +212,7 @@ if __name__ == "__main__":
             payload = json.load(f)
         payloads_for_histogram.append(payload)
 
-        hist = enrich_sp_baseline_history(result["history"])
+        hist = enrich_llm_ps_stochastic_history(result["history"])
         for step in hist:
             if int(step.get("supposed_to_open", 0) or 0):
                 total_supposed_to_open += 1
