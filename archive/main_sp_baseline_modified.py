@@ -1,4 +1,4 @@
-from sp_baseline import SPBaseline
+from llm_ps import LlmPS
 from environment import Environment
 from llm.llm import LLM
 
@@ -35,8 +35,8 @@ patch_config = {
 }
 
 max_trials = 70
-num_run = 100
-save_dir = r"training_results\nips_qwen\per_trial_deepseek32_1particle"
+num_run = 1
+save_dir = r"training_results\LLM_baseline_results"
 
 
 def save_history_to_csv(history, csv_path):
@@ -236,18 +236,26 @@ if __name__ == '__main__':
         environment = Environment(include_inspect=False)
         logger = Logger(logging=(run_idx == 0))
 
-        baseline = SPBaseline(
-            env=environment,
-            logger=logger,
-            model_name=llm_config["model"],
+        llm = LLM(
+            model=llm_config["model"],
             temperature=llm_config["temperature"],
             max_tokens=llm_config["max_tokens"],
         )
 
-        baseline = patch_spbaseline_with_early_stop(
-            baseline,
-            max_refine_fails_per_trial=patch_config["max_refine_fails_per_trial"],
+        baseline = LlmPS(
+            env=environment,
+            llm=llm,
+            logger=logger,
+            temperature=llm_config["temperature"],
+            max_tokens=llm_config["max_tokens"],
         )
+
+        result = baseline.run(max_trials=max_trials)
+
+        # baseline = patch_spbaseline_with_early_stop(
+        #     baseline,
+        #     max_refine_fails_per_trial=patch_config["max_refine_fails_per_trial"],
+        # )
 
         result = baseline.run(max_trials=max_trials)
         history = result["history"]

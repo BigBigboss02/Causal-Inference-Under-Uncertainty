@@ -2,7 +2,7 @@ from collections import defaultdict
 from environment import Environment, Key, Box
 from typing import List, Dict
 from llm.code import execute_hypothesis_code
-from llm.llm_vs2 import LLM
+from archive.llm_vs2 import LLM
 
 import math
 import random
