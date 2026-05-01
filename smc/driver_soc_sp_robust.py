@@ -1,6 +1,6 @@
 from environment import Environment
-from llm.llm_modified import LLM
-from smc_sp_modified import Engine
+from smc.llm.llm_robust import LLM
+from smc.smc_sp_robust import Engine
 
 import os
 from datetime import datetime

@@ -11,7 +11,7 @@ from typing import Dict, List, Optional, Tuple
 
 from environment import Environment, Key, Box
 from llm.code import check_valid_program, execute_hypothesis_code
-from llm.llm_modified import LLM
+from smc.llm.llm_robust import LLM
 
 
 @dataclass

@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Optional
 
 from environment import Environment, key_box_mapping
-from llm_ps_cn import LlmPS
+from smc.llm_ps_robust import LlmPS
 from llm.llm import LLM
 #from plot_utils.plot_hist_empirical_error import plot_empirical_success_histogram
 import matplotlib.pyplot as plt
