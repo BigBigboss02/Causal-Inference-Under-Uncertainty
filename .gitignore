@@ -1,6 +1,7 @@
 /thinking_outside_the_box-llms
 /documents
 /venv
+/.venv
 .env
 __pycache__
 .vscode
