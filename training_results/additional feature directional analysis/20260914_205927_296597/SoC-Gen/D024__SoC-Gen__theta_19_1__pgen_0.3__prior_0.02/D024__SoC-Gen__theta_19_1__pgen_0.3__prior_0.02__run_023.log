@@ -1,0 +1,32 @@
+{"Child_ID": "D024", "SoC_variant": "SoC-Gen", "theta": [19, 1], "p_gen": 0.3, "true_prior": 0.02, "run_number": 23, "seed": 7821301759854138639}
+TRIAL 1
+Action chosen: (pink, pink)
+Outcome: False
+partcle ids: ['similar_color_6', 'generator_1', 'shape_match', 'generator_2', 'similar_color_11', 'generator_3', 'generator_4', 'similar_color_7', 'similar_color_8', 'similar_color_7', 'similar_color_7', 'similar_color_11', 'shape_match', 'similar_color_8', 'similar_color_7', 'number_match', 'generator_5', 'generator_6', 'number_match', 'similar_color_8', 'generator_7', 'generator_8', 'color_match', 'similar_color_13', 'similar_color_3', 'generator_9', 'generator_10', 'similar_color_7', 'similar_color_3', 'number_match']
+number opened: 0
+TRIAL 2
+Action chosen: (red, red)
+Outcome: True
+partcle ids: ['number_match', 'generator_11', 'generator_12', 'generator_13', 'number_match', 'number_match', 'generator_14', 'generator_15', 'generator_16', 'number_match', 'similar_color_1', 'number_match', 'similar_color_13', 'number_match', 'number_match', 'generator_8', 'order_match', 'number_match', 'generator_8', 'number_match', 'number_match', 'number_match', 'generator_17', 'generator_18', 'generator_19', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match']
+number opened: 1
+TRIAL 3
+Action chosen: (green3, purple)
+Outcome: True
+partcle ids: ['number_match', 'generator_11', 'generator_12', 'generator_13', 'number_match', 'number_match', 'generator_14', 'generator_15', 'generator_16', 'number_match', 'similar_color_1', 'number_match', 'similar_color_13', 'number_match', 'number_match', 'generator_8', 'order_match', 'number_match', 'generator_8', 'number_match', 'number_match', 'number_match', 'generator_17', 'generator_18', 'generator_19', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match']
+number opened: 2
+TRIAL 4
+Action chosen: (grey2, pink)
+Outcome: True
+partcle ids: ['number_match', 'generator_11', 'generator_12', 'generator_13', 'number_match', 'number_match', 'generator_14', 'generator_15', 'generator_16', 'number_match', 'similar_color_1', 'number_match', 'similar_color_13', 'number_match', 'number_match', 'generator_8', 'order_match', 'number_match', 'generator_8', 'number_match', 'number_match', 'number_match', 'generator_17', 'generator_18', 'generator_19', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match']
+number opened: 3
+TRIAL 5
+Action chosen: (yellow5, blue)
+Outcome: True
+partcle ids: ['number_match', 'generator_11', 'generator_12', 'generator_13', 'number_match', 'number_match', 'generator_14', 'generator_15', 'generator_16', 'number_match', 'similar_color_1', 'number_match', 'similar_color_13', 'number_match', 'number_match', 'generator_8', 'order_match', 'number_match', 'generator_8', 'number_match', 'number_match', 'number_match', 'generator_17', 'generator_18', 'generator_19', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match']
+number opened: 4
+TRIAL 6
+Action chosen: (orange4, white)
+Outcome: True
+partcle ids: ['number_match', 'generator_11', 'generator_12', 'generator_13', 'number_match', 'number_match', 'generator_14', 'generator_15', 'generator_16', 'number_match', 'similar_color_1', 'number_match', 'similar_color_13', 'number_match', 'number_match', 'generator_8', 'order_match', 'number_match', 'generator_8', 'number_match', 'number_match', 'number_match', 'generator_17', 'generator_18', 'generator_19', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match']
+number opened: 5
+{"attempts": 6, "unique_key_box_pairs": 6, "revisit_attempts": 0, "revisit_rate": 0.0, "attempts_before_abandoning_color_matching": 2, "color_matching_abandoned": true}

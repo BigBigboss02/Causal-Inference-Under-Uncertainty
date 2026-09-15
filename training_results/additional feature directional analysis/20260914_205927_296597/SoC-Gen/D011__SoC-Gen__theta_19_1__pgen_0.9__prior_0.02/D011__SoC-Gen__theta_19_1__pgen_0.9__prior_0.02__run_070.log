@@ -1,0 +1,137 @@
+{"Child_ID": "D011", "SoC_variant": "SoC-Gen", "theta": [19, 1], "p_gen": 0.9, "true_prior": 0.02, "run_number": 70, "seed": 3939088075706628786}
+TRIAL 1
+Action chosen: (purple, pink)
+Outcome: False
+partcle ids: ['generator_1', 'generator_2', 'generator_3', 'generator_4', 'generator_5', 'similar_color_14', 'generator_6', 'generator_7', 'generator_8', 'generator_9', 'generator_10', 'generator_11', 'generator_12', 'generator_13', 'generator_14', 'generator_15', 'generator_16', 'generator_17', 'generator_18', 'generator_19', 'generator_20', 'generator_21', 'generator_22', 'generator_23', 'generator_24', 'generator_25', 'generator_26', 'generator_27', 'generator_28', 'generator_29']
+number opened: 0
+TRIAL 2
+Action chosen: (cloud, blue)
+Outcome: False
+partcle ids: ['generator_1', 'generator_2', 'generator_3', 'generator_4', 'generator_5', 'similar_color_14', 'generator_6', 'generator_7', 'generator_8', 'generator_9', 'generator_10', 'generator_11', 'generator_12', 'generator_13', 'generator_14', 'generator_15', 'generator_16', 'generator_17', 'generator_18', 'generator_19', 'generator_20', 'generator_21', 'generator_22', 'generator_23', 'generator_24', 'generator_25', 'generator_26', 'generator_27', 'generator_28', 'generator_29']
+number opened: 0
+TRIAL 3
+Action chosen: (heart, white)
+Outcome: False
+partcle ids: ['generator_1', 'generator_2', 'generator_3', 'generator_4', 'generator_5', 'similar_color_14', 'generator_6', 'generator_7', 'generator_8', 'generator_9', 'generator_10', 'generator_11', 'generator_12', 'generator_13', 'generator_14', 'generator_15', 'generator_16', 'generator_17', 'generator_18', 'generator_19', 'generator_20', 'generator_21', 'generator_22', 'generator_23', 'generator_24', 'generator_25', 'generator_26', 'generator_27', 'generator_28', 'generator_29']
+number opened: 0
+TRIAL 4
+Action chosen: (heart, pink)
+Outcome: False
+partcle ids: ['generator_30', 'generator_31', 'generator_1', 'generator_33', 'generator_34', 'generator_35', 'generator_36', 'generator_37', 'generator_38', 'generator_19', 'generator_17', 'generator_40', 'generator_41', 'generator_42', 'generator_43', 'generator_44', 'generator_45', 'generator_46', 'generator_9', 'generator_47', 'generator_48', 'generator_49', 'generator_50', 'generator_17', 'generator_52', 'generator_53', 'generator_54', 'generator_14', 'generator_56', 'generator_6']
+number opened: 0
+TRIAL 5
+Action chosen: (purple, white)
+Outcome: False
+partcle ids: ['generator_30', 'generator_31', 'generator_1', 'generator_33', 'generator_34', 'generator_35', 'generator_36', 'generator_37', 'generator_38', 'generator_19', 'generator_17', 'generator_40', 'generator_41', 'generator_42', 'generator_43', 'generator_44', 'generator_45', 'generator_46', 'generator_9', 'generator_47', 'generator_48', 'generator_49', 'generator_50', 'generator_17', 'generator_52', 'generator_53', 'generator_54', 'generator_14', 'generator_56', 'generator_6']
+number opened: 0
+TRIAL 6
+Action chosen: (triangle, white)
+Outcome: False
+partcle ids: ['generator_30', 'generator_31', 'generator_1', 'generator_33', 'generator_34', 'generator_35', 'generator_36', 'generator_37', 'generator_38', 'generator_19', 'generator_17', 'generator_40', 'generator_41', 'generator_42', 'generator_43', 'generator_44', 'generator_45', 'generator_46', 'generator_9', 'generator_47', 'generator_48', 'generator_49', 'generator_50', 'generator_17', 'generator_52', 'generator_53', 'generator_54', 'generator_14', 'generator_56', 'generator_6']
+number opened: 0
+TRIAL 7
+Action chosen: (pink, red)
+Outcome: False
+partcle ids: ['generator_30', 'generator_31', 'generator_1', 'generator_33', 'generator_34', 'generator_35', 'generator_36', 'generator_37', 'generator_38', 'generator_19', 'generator_17', 'generator_40', 'generator_41', 'generator_42', 'generator_43', 'generator_44', 'generator_45', 'generator_46', 'generator_9', 'generator_47', 'generator_48', 'generator_49', 'generator_50', 'generator_17', 'generator_52', 'generator_53', 'generator_54', 'generator_14', 'generator_56', 'generator_6']
+number opened: 0
+TRIAL 8
+Action chosen: (heart, purple)
+Outcome: False
+partcle ids: ['generator_52', 'generator_56', 'generator_38', 'generator_30', 'generator_61', 'generator_56', 'generator_37', 'generator_64', 'generator_65', 'generator_66', 'generator_67', 'generator_68', 'generator_37', 'generator_70', 'generator_34', 'generator_72', 'generator_73', 'generator_74', 'generator_75', 'generator_52', 'generator_37', 'generator_30', 'generator_77', 'generator_78', 'generator_38', 'generator_80', 'generator_46', 'generator_30', 'generator_54', 'generator_82']
+number opened: 0
+TRIAL 9
+Action chosen: (grey2, red)
+Outcome: False
+partcle ids: ['generator_52', 'generator_56', 'generator_38', 'generator_30', 'generator_61', 'generator_56', 'generator_37', 'generator_64', 'generator_65', 'generator_66', 'generator_67', 'generator_68', 'generator_37', 'generator_70', 'generator_34', 'generator_72', 'generator_73', 'generator_74', 'generator_75', 'generator_52', 'generator_37', 'generator_30', 'generator_77', 'generator_78', 'generator_38', 'generator_80', 'generator_46', 'generator_30', 'generator_54', 'generator_82']
+number opened: 0
+TRIAL 10
+Action chosen: (orange4, purple)
+Outcome: False
+partcle ids: ['generator_52', 'generator_56', 'generator_38', 'generator_30', 'generator_61', 'generator_56', 'generator_37', 'generator_64', 'generator_65', 'generator_66', 'generator_67', 'generator_68', 'generator_37', 'generator_70', 'generator_34', 'generator_72', 'generator_73', 'generator_74', 'generator_75', 'generator_52', 'generator_37', 'generator_30', 'generator_77', 'generator_78', 'generator_38', 'generator_80', 'generator_46', 'generator_30', 'generator_54', 'generator_82']
+number opened: 0
+TRIAL 11
+Action chosen: (grey2, blue)
+Outcome: False
+partcle ids: ['generator_52', 'generator_56', 'generator_38', 'generator_30', 'generator_61', 'generator_56', 'generator_37', 'generator_64', 'generator_65', 'generator_66', 'generator_67', 'generator_68', 'generator_37', 'generator_70', 'generator_34', 'generator_72', 'generator_73', 'generator_74', 'generator_75', 'generator_52', 'generator_37', 'generator_30', 'generator_77', 'generator_78', 'generator_38', 'generator_80', 'generator_46', 'generator_30', 'generator_54', 'generator_82']
+number opened: 0
+TRIAL 12
+Action chosen: (grey2, pink)
+Outcome: True
+partcle ids: ['generator_52', 'generator_84', 'generator_70', 'generator_70', 'generator_52', 'generator_88', 'generator_89', 'generator_70', 'generator_70', 'generator_92', 'generator_93', 'generator_94', 'generator_95', 'generator_70', 'generator_52', 'generator_98', 'generator_70', 'generator_70', 'generator_101', 'generator_102', 'generator_52', 'generator_52', 'generator_70', 'generator_52', 'generator_52', 'generator_52', 'generator_109', 'generator_52', 'generator_52', 'generator_112']
+number opened: 1
+TRIAL 13
+Action chosen: (pink, white)
+Outcome: False
+partcle ids: ['generator_52', 'generator_84', 'generator_70', 'generator_70', 'generator_52', 'generator_88', 'generator_89', 'generator_70', 'generator_70', 'generator_92', 'generator_93', 'generator_94', 'generator_95', 'generator_70', 'generator_52', 'generator_98', 'generator_70', 'generator_70', 'generator_101', 'generator_102', 'generator_52', 'generator_52', 'generator_70', 'generator_52', 'generator_52', 'generator_52', 'generator_109', 'generator_52', 'generator_52', 'generator_112']
+number opened: 1
+TRIAL 14
+Action chosen: (purple, red)
+Outcome: False
+partcle ids: ['generator_88', 'generator_109', 'generator_101', 'generator_116', 'generator_92', 'generator_84', 'generator_119', 'generator_120', 'generator_101', 'generator_84', 'generator_102', 'generator_94', 'generator_94', 'generator_94', 'generator_101', 'generator_127', 'generator_128', 'generator_129', 'generator_88', 'generator_52', 'generator_101', 'generator_133', 'generator_134', 'generator_135', 'generator_84', 'generator_137', 'generator_92', 'generator_101', 'generator_88', 'generator_141']
+number opened: 1
+TRIAL 15
+Action chosen: (green3, white)
+Outcome: False
+partcle ids: ['generator_88', 'generator_109', 'generator_101', 'generator_116', 'generator_92', 'generator_84', 'generator_119', 'generator_120', 'generator_101', 'generator_84', 'generator_102', 'generator_94', 'generator_94', 'generator_94', 'generator_101', 'generator_127', 'generator_128', 'generator_129', 'generator_88', 'generator_52', 'generator_101', 'generator_133', 'generator_134', 'generator_135', 'generator_84', 'generator_137', 'generator_92', 'generator_101', 'generator_88', 'generator_141']
+number opened: 1
+TRIAL 16
+Action chosen: (green3, red)
+Outcome: False
+partcle ids: ['generator_142', 'generator_143', 'generator_84', 'generator_134', 'generator_144', 'generator_52', 'generator_145', 'generator_146', 'generator_146', 'generator_147', 'generator_148', 'generator_149', 'generator_102', 'generator_134', 'generator_109', 'generator_84', 'generator_116', 'generator_120', 'generator_127', 'generator_156', 'generator_84', 'generator_84', 'generator_159', 'generator_128', 'generator_102', 'generator_128', 'generator_163', 'generator_127', 'generator_165', 'generator_166']
+number opened: 1
+TRIAL 17
+Action chosen: (orange4, white)
+Outcome: True
+partcle ids: ['generator_167', 'generator_168', 'generator_159', 'generator_170', 'generator_171', 'generator_84', 'generator_166', 'generator_84', 'generator_174', 'generator_175', 'generator_84', 'generator_177', 'generator_178', 'generator_179', 'generator_180', 'generator_181', 'generator_182', 'generator_163', 'generator_163', 'generator_185', 'generator_186', 'generator_187', 'generator_188', 'generator_189', 'generator_166', 'generator_159', 'generator_142', 'generator_193', 'generator_163', 'generator_195']
+number opened: 2
+TRIAL 18
+Action chosen: (heart, blue)
+Outcome: False
+partcle ids: ['generator_167', 'generator_168', 'generator_159', 'generator_170', 'generator_171', 'generator_84', 'generator_166', 'generator_84', 'generator_174', 'generator_175', 'generator_84', 'generator_177', 'generator_178', 'generator_179', 'generator_180', 'generator_181', 'generator_182', 'generator_163', 'generator_163', 'generator_185', 'generator_186', 'generator_187', 'generator_188', 'generator_189', 'generator_166', 'generator_159', 'generator_142', 'generator_193', 'generator_163', 'generator_195']
+number opened: 2
+TRIAL 19
+Action chosen: (triangle, red)
+Outcome: False
+partcle ids: ['generator_167', 'generator_168', 'generator_159', 'generator_170', 'generator_171', 'generator_84', 'generator_166', 'generator_84', 'generator_174', 'generator_175', 'generator_84', 'generator_177', 'generator_178', 'generator_179', 'generator_180', 'generator_181', 'generator_182', 'generator_163', 'generator_163', 'generator_185', 'generator_186', 'generator_187', 'generator_188', 'generator_189', 'generator_166', 'generator_159', 'generator_142', 'generator_193', 'generator_163', 'generator_195']
+number opened: 2
+TRIAL 20
+Action chosen: (diamond, blue)
+Outcome: False
+partcle ids: ['generator_180', 'generator_180', 'generator_142', 'generator_199', 'generator_178', 'generator_189', 'generator_177', 'generator_203', 'generator_195', 'generator_142', 'generator_206', 'generator_181', 'generator_181', 'generator_181', 'generator_180', 'generator_195', 'generator_142', 'generator_213', 'generator_214', 'generator_188', 'generator_216', 'generator_217', 'generator_177', 'generator_219', 'generator_220', 'generator_221', 'generator_222', 'generator_167', 'generator_224', 'generator_225']
+number opened: 2
+TRIAL 21
+Action chosen: (diamond, red)
+Outcome: False
+partcle ids: ['generator_180', 'generator_180', 'generator_142', 'generator_199', 'generator_178', 'generator_189', 'generator_177', 'generator_203', 'generator_195', 'generator_142', 'generator_206', 'generator_181', 'generator_181', 'generator_181', 'generator_180', 'generator_195', 'generator_142', 'generator_213', 'generator_214', 'generator_188', 'generator_216', 'generator_217', 'generator_177', 'generator_219', 'generator_220', 'generator_221', 'generator_222', 'generator_167', 'generator_224', 'generator_225']
+number opened: 2
+TRIAL 22
+Action chosen: (red, red)
+Outcome: True
+partcle ids: ['generator_226', 'generator_224', 'generator_224', 'generator_228', 'generator_229', 'generator_220', 'generator_167', 'generator_232', 'generator_233', 'generator_234', 'generator_235', 'generator_236', 'generator_237', 'generator_238', 'generator_181', 'generator_240', 'generator_216', 'generator_242', 'generator_216', 'generator_244', 'generator_216', 'generator_246', 'generator_247', 'generator_229', 'generator_248', 'generator_181', 'generator_232', 'generator_250', 'generator_216', 'generator_216']
+number opened: 3
+TRIAL 23
+Action chosen: (blue, blue)
+Outcome: False
+partcle ids: ['generator_226', 'generator_224', 'generator_224', 'generator_228', 'generator_229', 'generator_220', 'generator_167', 'generator_232', 'generator_233', 'generator_234', 'generator_235', 'generator_236', 'generator_237', 'generator_238', 'generator_181', 'generator_240', 'generator_216', 'generator_242', 'generator_216', 'generator_244', 'generator_216', 'generator_246', 'generator_247', 'generator_229', 'generator_248', 'generator_181', 'generator_232', 'generator_250', 'generator_216', 'generator_216']
+number opened: 3
+TRIAL 24
+Action chosen: (white, blue)
+Outcome: False
+partcle ids: ['generator_226', 'generator_224', 'generator_224', 'generator_228', 'generator_229', 'generator_220', 'generator_167', 'generator_232', 'generator_233', 'generator_234', 'generator_235', 'generator_236', 'generator_237', 'generator_238', 'generator_181', 'generator_240', 'generator_216', 'generator_242', 'generator_216', 'generator_244', 'generator_216', 'generator_246', 'generator_247', 'generator_229', 'generator_248', 'generator_181', 'generator_232', 'generator_250', 'generator_216', 'generator_216']
+number opened: 3
+TRIAL 25
+Action chosen: (yellow5, blue)
+Outcome: True
+partcle ids: ['generator_233', 'generator_252', 'generator_228', 'generator_242', 'generator_253', 'generator_242', 'generator_242', 'generator_228', 'generator_254', 'generator_254', 'generator_228', 'generator_228', 'generator_233', 'number_match', 'generator_242', 'generator_228', 'generator_233', 'generator_252', 'number_match', 'number_match', 'generator_250', 'generator_252', 'generator_252', 'number_match', 'generator_228', 'generator_228', 'generator_228', 'generator_252', 'number_match', 'generator_228']
+number opened: 4
+TRIAL 26
+Action chosen: (pink, purple)
+Outcome: False
+partcle ids: ['generator_233', 'generator_252', 'generator_228', 'generator_242', 'generator_253', 'generator_242', 'generator_242', 'generator_228', 'generator_254', 'generator_254', 'generator_228', 'generator_228', 'generator_233', 'number_match', 'generator_242', 'generator_228', 'generator_233', 'generator_252', 'number_match', 'number_match', 'generator_250', 'generator_252', 'generator_252', 'number_match', 'generator_228', 'generator_228', 'generator_228', 'generator_252', 'number_match', 'generator_228']
+number opened: 4
+TRIAL 27
+Action chosen: (green3, purple)
+Outcome: True
+partcle ids: ['number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match', 'number_match']
+number opened: 5
+{"attempts": 27, "unique_key_box_pairs": 27, "revisit_attempts": 0, "revisit_rate": 0.0, "attempts_before_abandoning_color_matching": 0, "color_matching_abandoned": true}
